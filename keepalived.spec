@@ -4,8 +4,8 @@
 Summary: HA monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.1.13
-Release: 6%{?dist}
-License: GPL
+Release: 7%{?dist}
+License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
@@ -103,6 +103,9 @@ fi
 
 
 %changelog
+* Sun Aug  5 2007 Matthias Saou <http://freshrpms.net/> 1.1.13-7
+- Update License field.
+
 * Mon Mar 26 2007 Matthias Saou <http://freshrpms.net/> 1.1.13-6
 - Fix doc/samples/sample.misccheck.smbcheck.sh mode (600 -> 644).
 
