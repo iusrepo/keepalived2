@@ -18,6 +18,10 @@ Requires(postun): /sbin/service
 BuildRequires: openssl-devel
 # We need both of these for proper LVS support
 BuildRequires: kernel, kernel-devel
+# We need popt, popt-devel is split out of rpm in Fedora 8+
+%if 0%{?fedora} >= 8
+BuildRequires: popt-devel
+%endif
 
 %description
 The main goal of the keepalived project is to add a strong & robust keepalive
