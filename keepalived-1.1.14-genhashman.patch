@@ -1,0 +1,20 @@
+diff -Naupr keepalived-1.1.14.orig/genhash/Makefile.in keepalived-1.1.14/genhash/Makefile.in
+--- keepalived-1.1.14.orig/genhash/Makefile.in	2007-09-13 16:47:12.000000000 +0200
++++ keepalived-1.1.14/genhash/Makefile.in	2007-09-13 18:48:23.000000000 +0200
+@@ -39,13 +39,13 @@ distclean: clean
+ 
+ uninstall:
+ 	rm -f $(DESTDIR)$(bindir)/$(EXEC)
+-	rm -f $(DESTDIR)$(mandir)/man/man1/genhash.1
++	rm -f $(DESTDIR)$(mandir)/man1/genhash.1
+ 
+ install:
+ 	install -d $(DESTDIR)$(bindir)
+ 	install -m 755 $(BIN)/$(EXEC) $(DESTDIR)$(bindir)/
+-	install -d $(DESTDIR)$(mandir)/man/man1
+-	install -m 644 ../doc/man/man1/genhash.1 $(DESTDIR)$(mandir)/man/man1
++	install -d $(DESTDIR)$(mandir)/man1
++	install -m 644 ../doc/man/man1/genhash.1 $(DESTDIR)$(mandir)/man1
+ 
+ mrproper: clean distclean
+ 	rm -f config.*

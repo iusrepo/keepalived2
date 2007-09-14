@@ -1,0 +1,20 @@
+diff -Naupr keepalived-1.1.14.orig/keepalived/Makefile.in keepalived-1.1.14/keepalived/Makefile.in
+--- keepalived-1.1.14.orig/keepalived/Makefile.in	2007-09-13 15:44:39.000000000 +0200
++++ keepalived-1.1.14/keepalived/Makefile.in	2007-09-14 12:38:43.000000000 +0200
+@@ -99,13 +99,13 @@ uninstall:
+ 
+ install:
+ 	install -d $(DESTDIR)$(sbindir)
+-	install -m 700 $(BIN)/$(EXEC) $(DESTDIR)$(sbindir)/
++	install -m 755 $(BIN)/$(EXEC) $(DESTDIR)$(sbindir)/
+ 	install -d $(DESTDIR)$(init_dir)
+ 	install -m 755 etc/init.d/keepalived.init $(DESTDIR)$(init_dir)/keepalived
+ 	install -d $(DESTDIR)$(sysconf_dir)
+-	install -m 755 etc/init.d/keepalived.sysconfig $(DESTDIR)$(sysconf_dir)/keepalived
++	install -m 644 etc/init.d/keepalived.sysconfig $(DESTDIR)$(sysconf_dir)/keepalived
+ 	install -d $(DESTDIR)$(sysconfdir)/keepalived/samples
+-	install -m 644 etc/keepalived/keepalived.conf $(DESTDIR)$(sysconfdir)/keepalived/
++	install -m 640 etc/keepalived/keepalived.conf $(DESTDIR)$(sysconfdir)/keepalived/
+ 	install -m 644 ../doc/samples/* $(DESTDIR)$(sysconfdir)/keepalived/samples/
+ 	install -d $(DESTDIR)$(mandir)/man5
+ 	install -d $(DESTDIR)$(mandir)/man8

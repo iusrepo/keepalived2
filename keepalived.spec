@@ -3,18 +3,18 @@
 
 Summary: HA monitor built upon LVS, VRRP and service pollers
 Name: keepalived
-Version: 1.1.13
-Release: 8%{?dist}
+Version: 1.1.14
+Release: 1%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
-Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
-Source1: keepalived.init
-Source2: keepalived.sysconfig
-Patch0: keepalived-1.1.13-makefile.patch
-Patch1: keepalived-1.1.13-iflabel.patch
-Patch2: keepalived-1.1.13-types.patch
+Source: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
+Patch0: keepalived-1.1.14-genhashman.patch
+Patch1: keepalived-1.1.14-installmodes.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+Requires(post): /sbin/chkconfig
+Requires(preun): /sbin/service, /sbin/chkconfig
+Requires(postun): /sbin/service
 BuildRequires: openssl-devel
 # We need both of these for proper LVS support
 BuildRequires: kernel, kernel-devel
@@ -34,11 +34,12 @@ healthchecks and LVS directors failover.
 
 %prep
 %setup -q
-%patch0 -p1 -b .makefile
-%patch1 -p0 -b .iflabel
-%patch2 -p1 -b .types
+%patch0 -p1 -b .genhashman
+%patch1 -p1 -b .installmodes
 # Fix file mode (600 as of 1.1.13)
 %{__chmod} a+r doc/samples/sample.misccheck.smbcheck.sh
+# Included as doc, so disable its dependencies
+%{__chmod} -x goodies/arpreset.pl
 
 
 %build
@@ -51,12 +52,6 @@ healthchecks and LVS directors failover.
 %{__make} install DESTDIR=%{buildroot}
 # Remove "samples", as we include them in %%doc
 %{__rm} -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
-# Init script (based on the included one, but enhanced)
-%{__install} -D -p -m 0755 %{SOURCE1} \
-    %{buildroot}%{_sysconfdir}/rc.d/init.d/keepalived
-# Sysconfig file (used by the init script)
-%{__install} -D -p -m 0640 %{SOURCE2} \
-    %{buildroot}%{_sysconfdir}/sysconfig/keepalived
 
 
 %check
@@ -90,10 +85,10 @@ fi
 %files
 %defattr(-,root,root,-)
 %doc AUTHOR ChangeLog CONTRIBUTORS COPYING README TODO
-%doc doc/keepalived.conf.SYNOPSIS doc/samples/
+%doc doc/keepalived.conf.SYNOPSIS doc/samples/ goodies/arpreset.pl
 %dir %{_sysconfdir}/keepalived/
-%attr(0640, root, root) %config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
-%attr(0640, root, root) %config(noreplace) %{_sysconfdir}/sysconfig/keepalived
+%config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
+%config(noreplace) %{_sysconfdir}/sysconfig/keepalived
 %{_sysconfdir}/rc.d/init.d/keepalived
 %{_bindir}/genhash
 %{_sbindir}/keepalived
@@ -103,6 +98,14 @@ fi
 
 
 %changelog
+* Thu Sep 13 2007 Matthias Saou <http://freshrpms.net/> 1.1.14-1
+- Update to 1.1.14.
+- Remove all upstreamed patches.
+- Remove our init script and sysconfig files, use the same now provided by the
+  upstream package (will need to patch for LSB stuff soonish).
+- Include new goodies/arpreset.pl in %%doc.
+- Add missing scriplet requirements.
+
 * Wed Aug 22 2007 Matthias Saou <http://freshrpms.net/> 1.1.13-8
 - Rebuild for new BuildID feature.
 
