@@ -3,15 +3,13 @@
 
 Summary: HA monitor built upon LVS, VRRP and service pollers
 Name: keepalived
-Version: 1.1.14
-Release: 2%{?dist}
+Version: 1.1.15
+Release: 1%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
 Source: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
-Patch0: keepalived-1.1.14-genhashman.patch
-Patch1: keepalived-1.1.14-installmodes.patch
-Patch2: keepalived-1.1.14-include.patch
+Patch0: keepalived-1.1.14-installmodes.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires(post): /sbin/chkconfig
 Requires(preun): /sbin/service, /sbin/chkconfig
@@ -39,9 +37,7 @@ healthchecks and LVS directors failover.
 
 %prep
 %setup -q
-%patch0 -p1 -b .genhashman
-%patch1 -p1 -b .installmodes
-%patch2 -p1 -b .include
+%patch0 -p1 -b .installmodes
 # Fix file mode (600 as of 1.1.13)
 %{__chmod} a+r doc/samples/sample.misccheck.smbcheck.sh
 # Included as doc, so disable its dependencies
@@ -104,6 +100,10 @@ fi
 
 
 %changelog
+* Mon Sep 17 2007 Matthias Saou <http://freshrpms.net/> 1.1.15-1
+- Update to 1.1.15.
+- Remove merged genhashman and include patches.
+
 * Fri Sep 14 2007 Matthias Saou <http://freshrpms.net/> 1.1.14-2
 - Include patch from Shinji Tanaka to fix conf include from inside some
   directives like vrrp_instance.
