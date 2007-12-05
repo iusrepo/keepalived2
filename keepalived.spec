@@ -4,7 +4,7 @@
 Summary: HA monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.1.15
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -100,6 +100,9 @@ fi
 
 
 %changelog
+* Wed Dec 05 2007 Release Engineering <rel-eng at fedoraproject dot org> - 1.1.15-3
+ - Rebuild for deps
+
 * Mon Oct 22 2007 Matthias Saou <http://freshrpms.net/> 1.1.15-2
 - Update to latest upstream sources, identical except for the included spec.
 
