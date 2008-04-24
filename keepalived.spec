@@ -4,7 +4,7 @@
 Summary: HA monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.1.15
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -45,7 +45,9 @@ healthchecks and LVS directors failover.
 
 
 %build
-%configure --with-kernel-dir="/lib/modules/%{kernel}/build"
+# Get the first available kernel build dir for our version, expanding arch
+KERNELDIR=$(ls -1d /lib/modules/%{kernel}*/build | head -1)
+%configure --with-kernel-dir="${KERNELDIR}"
 %{__make} %{?_smp_mflags} STRIP=/bin/true
 
 
@@ -100,10 +102,13 @@ fi
 
 
 %changelog
-* Tue Feb 19 2008 Fedora Release Engineering <rel-eng@fedoraproject.org> - 1.1.15-4
+* Thu Apr 24 2008 Matthias Saou <http://freshrpms.net/> 1.1.15-5
+- Add glob to the kerneldir location, since it contains the arch for F9+.
+
+* Tue Feb 19 2008 Fedora Release Engineering <rel-eng@fedoraproject.org>
 - Autorebuild for GCC 4.3
 
-* Wed Dec 05 2007 Release Engineering <rel-eng at fedoraproject dot org> - 1.1.15-3
+* Wed Dec 05 2007 Release Engineering <rel-eng at fedoraproject dot org>
  - Rebuild for deps
 
 * Mon Oct 22 2007 Matthias Saou <http://freshrpms.net/> 1.1.15-2
