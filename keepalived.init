@@ -1,0 +1,85 @@
+#!/bin/sh
+#
+# Startup script for the Keepalived daemon
+# chkconfig: - 21 79
+# description: HA monitor built upon LVS, VRRP and service pollers
+# processname: keepalived
+# config: /etc/keepalived/keepalived.conf
+# config: /etc/sysconfig/keepalived
+# pidfile: /var/run/keepalived.pid
+#
+### BEGIN INIT INFO
+# Provides: keepalived
+# Required-Start: $local_fs $network $named
+# Required-Stop: $local_fs $remote_fs $network
+# Short-Description: HA monitor built upon LVS, VRRP and service pollers
+# Description: Robust keepalive facility to the Linux Virtual Server project
+#  with multilayer TCP/IP stack checks.
+### END INIT INFO
+
+# Source function library
+. /etc/rc.d/init.d/functions
+
+# Source configuration file (we set KEEPALIVED_OPTIONS there)
+. /etc/sysconfig/keepalived
+
+RETVAL=0
+
+prog="keepalived"
+
+start() {
+    echo -n $"Starting $prog: "
+    daemon keepalived ${KEEPALIVED_OPTIONS}
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
+}
+
+stop() {
+    echo -n $"Stopping $prog: "
+    killproc keepalived
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog
+}
+
+reload() {
+    echo -n $"Reloading $prog: "
+    killproc keepalived -1
+    RETVAL=$?
+    echo
+}
+
+# See how we were called.
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    reload|force-reload)
+        reload
+        ;;
+    restart)
+        stop
+        start
+        ;;
+    condrestart|try-restart)
+        if [ -f /var/lock/subsys/$prog ]; then
+            stop
+            start
+        else
+            echo $"Service $prog not running."
+            exit 7
+        fi
+        ;;
+    status)
+        status keepalived
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|reload|force-reload|restart|try-restart|status}"
+        exit 3
+esac
+
+exit $RETVAL

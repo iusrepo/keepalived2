@@ -4,11 +4,12 @@
 Summary: HA monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.1.15
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
-Source: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
+Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
+Source1: keepalived.init
 Patch0: keepalived-1.1.14-installmodes.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires(post): /sbin/chkconfig
@@ -56,6 +57,9 @@ KERNELDIR=$(ls -1d /lib/modules/%{kernel}*/build | head -1)
 %{__make} install DESTDIR=%{buildroot}
 # Remove "samples", as we include them in %%doc
 %{__rm} -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
+# Overwrite the init script with our (mostly) LSB compliant one
+%{__install} -p -m 0755 %{SOURCE1} \
+    %{buildroot}%{_sysconfdir}/rc.d/init.d/keepalived
 
 
 %check
@@ -102,6 +106,9 @@ fi
 
 
 %changelog
+* Mon Dec 22 2008 Matthias Saou <http://freshrpms.net/> 1.1.15-6
+- Fork the init script to be (mostly for now) LSB compliant (#246966).
+
 * Thu Apr 24 2008 Matthias Saou <http://freshrpms.net/> 1.1.15-5
 - Add glob to the kerneldir location, since it contains the arch for F9+.
 
@@ -109,7 +116,7 @@ fi
 - Autorebuild for GCC 4.3
 
 * Wed Dec 05 2007 Release Engineering <rel-eng at fedoraproject dot org>
- - Rebuild for deps
+- Rebuild for deps
 
 * Mon Oct 22 2007 Matthias Saou <http://freshrpms.net/> 1.1.15-2
 - Update to latest upstream sources, identical except for the included spec.
