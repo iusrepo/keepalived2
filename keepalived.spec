@@ -3,8 +3,8 @@
 
 Summary: HA monitor built upon LVS, VRRP and service pollers
 Name: keepalived
-Version: 1.1.15
-Release: 8%{?dist}
+Version: 1.1.17
+Release: 1%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -39,7 +39,7 @@ healthchecks and LVS directors failover.
 %prep
 %setup -q
 %patch0 -p1 -b .installmodes
-# Fix file mode (600 as of 1.1.13)
+# Fix file mode (600 as of 1.1.13, still as of 1.1.17)
 %{__chmod} a+r doc/samples/sample.misccheck.smbcheck.sh
 # Included as doc, so disable its dependencies
 %{__chmod} -x goodies/arpreset.pl
@@ -57,7 +57,7 @@ KERNELDIR=$(ls -1d /lib/modules/%{kernel}*/build | head -1)
 %{__make} install DESTDIR=%{buildroot}
 # Remove "samples", as we include them in %%doc
 %{__rm} -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
-# Overwrite the init script with our (mostly) LSB compliant one
+# Overwrite the init script with our LSB compliant one
 %{__install} -p -m 0755 %{SOURCE1} \
     %{buildroot}%{_sysconfdir}/rc.d/init.d/keepalived
 
@@ -106,7 +106,11 @@ fi
 
 
 %changelog
-* Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.1.15-8
+* Sun Apr 12 2009 Matthias Saou <http://freshrpms.net/> 1.1.17-1
+- Update to 1.1.17.
+- Update init script all the way.
+
+* Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org>
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
 
 * Sat Jan 17 2009 Tomas Mraz <tmraz@redhat.com> 1.1.15-7

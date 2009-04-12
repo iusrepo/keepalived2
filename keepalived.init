@@ -1,85 +1,110 @@
 #!/bin/sh
 #
-# Startup script for the Keepalived daemon
-# chkconfig: - 21 79
-# description: HA monitor built upon LVS, VRRP and service pollers
-# processname: keepalived
-# config: /etc/keepalived/keepalived.conf
-# config: /etc/sysconfig/keepalived
-# pidfile: /var/run/keepalived.pid
+# keepalived   High Availability monitor built upon LVS and VRRP
 #
+# chkconfig:   - 21 79
+# description: Robust keepalive facility to the Linux Virtual Server project \
+#              with multilayer TCP/IP stack checks.
+
 ### BEGIN INIT INFO
 # Provides: keepalived
-# Required-Start: $local_fs $network $named
-# Required-Stop: $local_fs $remote_fs $network
-# Short-Description: HA monitor built upon LVS, VRRP and service pollers
-# Description: Robust keepalive facility to the Linux Virtual Server project
-#  with multilayer TCP/IP stack checks.
+# Required-Start: $local_fs $network $named $syslog
+# Required-Stop: $local_fs $network $named $syslog
+# Should-Start: httpd
+# Should-Stop:  httpd
+# Default-Start: 
+# Default-Stop: 0 1 2 3 4 5 6
+# Short-Description: High Availability monitor built upon LVS and VRRP
+# Description:       Robust keepalive facility to the Linux Virtual Server
+#                    project with multilayer TCP/IP stack checks.
 ### END INIT INFO
 
-# Source function library
+# Source function library.
 . /etc/rc.d/init.d/functions
 
-# Source configuration file (we set KEEPALIVED_OPTIONS there)
-. /etc/sysconfig/keepalived
-
-RETVAL=0
-
+exec="/usr/sbin/keepalived"
 prog="keepalived"
+config="/etc/keepalived/keepalived.conf"
+
+[ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
+
+lockfile=/var/lock/subsys/$prog
 
 start() {
+    [ -x $exec ] || exit 5
+    [ -e $config ] || exit 6
     echo -n $"Starting $prog: "
-    daemon keepalived ${KEEPALIVED_OPTIONS}
-    RETVAL=$?
+    daemon $exec $KEEPALIVED_OPTIONS
+    retval=$?
     echo
-    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
+    [ $retval -eq 0 ] && touch $lockfile
+    return $retval
 }
 
 stop() {
     echo -n $"Stopping $prog: "
-    killproc keepalived
-    RETVAL=$?
+    killproc $prog
+    retval=$?
     echo
-    [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog
+    [ $retval -eq 0 ] && rm -f $lockfile
+    return $retval
+}
+
+restart() {
+    stop
+    start
 }
 
 reload() {
     echo -n $"Reloading $prog: "
-    killproc keepalived -1
-    RETVAL=$?
+    killproc $prog -1
+    retval=$?
     echo
+    return $retval
 }
 
-# See how we were called.
+force_reload() {
+    restart
+}
+
+rh_status() {
+    status $prog
+}
+
+rh_status_q() {
+    rh_status &>/dev/null
+}
+
+
 case "$1" in
     start)
-        start
+        rh_status_q && exit 0
+        $1
         ;;
     stop)
-        stop
-        ;;
-    reload|force-reload)
-        reload
+        rh_status_q || exit 0
+        $1
         ;;
     restart)
-        stop
-        start
+        $1
         ;;
-    condrestart|try-restart)
-        if [ -f /var/lock/subsys/$prog ]; then
-            stop
-            start
-        else
-            echo $"Service $prog not running."
-            exit 7
-        fi
+    reload)
+        rh_status_q || exit 7
+        $1
+        ;;
+    force-reload)
+        force_reload
         ;;
     status)
-        status keepalived
+        rh_status
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 0
+        restart
         ;;
     *)
-        echo "Usage: $0 {start|stop|reload|force-reload|restart|try-restart|status}"
-        exit 3
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload}"
+        exit 2
 esac
+exit $?
 
-exit $RETVAL
