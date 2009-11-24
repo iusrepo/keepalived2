@@ -1,0 +1,12 @@
+diff -Naupr keepalived-1.1.19.orig/keepalived/check/ipvswrapper.c keepalived-1.1.19/keepalived/check/ipvswrapper.c
+--- keepalived-1.1.19.orig/keepalived/check/ipvswrapper.c	2009-09-28 13:03:40.000000000 +0200
++++ keepalived-1.1.19/keepalived/check/ipvswrapper.c	2009-11-24 22:41:56.220195007 +0100
+@@ -789,7 +789,7 @@ string_to_number(const char *s, int min,
+ static int
+ modprobe_ipvs(void)
+ {
+-	char *argv[] = { "/sbin/modprobe", "-s", "-k", "--", "ip_vs", NULL };
++	char *argv[] = { "/sbin/modprobe", "-s", "--", "ip_vs", NULL };
+ 	int child;
+ 	int status;
+ 	int rc;
