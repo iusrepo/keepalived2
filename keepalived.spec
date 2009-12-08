@@ -1,10 +1,7 @@
-# Ugly, but we need headers from a kernel to rebuild against
-%define kernel %(rpm -q kernel-devel --qf '%{RPMTAG_VERSION}-%{RPMTAG_RELEASE}\\n' 2>/dev/null | head -1)
-
 Summary: HA monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.1.19
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -48,8 +45,8 @@ healthchecks and LVS directors failover.
 
 
 %build
-# Get the first available kernel build dir for our version, expanding arch
-KERNELDIR=$(ls -1d /lib/modules/%{kernel}*/build | head -1)
+# Get the most recent available kernel build dir, allows to expand arch too
+KERNELDIR=$(ls -1d --sort t /lib/modules/*/build | head -1)
 %configure --with-kernel-dir="${KERNELDIR}"
 %{__make} %{?_smp_mflags} STRIP=/bin/true
 
@@ -108,6 +105,10 @@ fi
 
 
 %changelog
+* Tue Dec  8 2009 Matthias Saou <http://freshrpms.net/> 1.1.19-3
+- Update init script to have keepalived start after the local MTA (#526512).
+- Simplify the kernel source detection, to avoid running rpm from rpmbuild.
+
 * Tue Nov 24 2009 Matthias Saou <http://freshrpms.net/> 1.1.19-2
 - Include patch to remove obsolete -k option to modprobe (#528465).
 
