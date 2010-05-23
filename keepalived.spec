@@ -1,7 +1,7 @@
 Summary: HA monitor built upon LVS, VRRP and service pollers
 Name: keepalived
-Version: 1.1.19
-Release: 3%{?dist}
+Version: 1.1.20
+Release: 1%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -16,8 +16,8 @@ Requires(postun): /sbin/service
 BuildRequires: openssl-devel
 # We need both of these for proper LVS support
 BuildRequires: kernel, kernel-devel
-# We need popt, popt-devel is split out of rpm in Fedora 8+
-%if 0%{?fedora} >= 8
+# We need popt, popt-devel is split out of rpm in Fedora 8+ and RHEL 6+
+%if 0%{?fedora} >= 8 || 0%{?rhel} >= 6
 BuildRequires: popt-devel
 %endif
 
@@ -38,10 +38,6 @@ healthchecks and LVS directors failover.
 %setup -q
 %patch0 -p1 -b .installmodes
 %patch1 -p1 -b .fix-ipvs-loading
-# Fix file mode (600 as of 1.1.13, still as of 1.1.17)
-%{__chmod} a+r doc/samples/sample.misccheck.smbcheck.sh
-# Included as doc, so disable its dependencies
-%{__chmod} -x goodies/arpreset.pl
 
 
 %build
@@ -92,7 +88,7 @@ fi
 %files
 %defattr(-,root,root,-)
 %doc AUTHOR ChangeLog CONTRIBUTORS COPYING README TODO
-%doc doc/keepalived.conf.SYNOPSIS doc/samples/ goodies/arpreset.pl
+%doc doc/keepalived.conf.SYNOPSIS doc/samples/
 %dir %{_sysconfdir}/keepalived/
 %config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/keepalived
@@ -105,6 +101,11 @@ fi
 
 
 %changelog
+* Sun May 23 2010 Matthias Saou <http://freshrpms.net/> 1.1.20-1
+- Update to 1.1.20 (#589923).
+- Update BR conditional for RHEL6.
+- No longer include goodies/arpreset.pl, it's gone from the sources.
+
 * Tue Dec  8 2009 Matthias Saou <http://freshrpms.net/> 1.1.19-3
 - Update init script to have keepalived start after the local MTA (#526512).
 - Simplify the kernel source detection, to avoid running rpm from rpmbuild.
