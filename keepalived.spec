@@ -1,7 +1,7 @@
 Summary: HA monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.1.20
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -20,6 +20,8 @@ BuildRequires: kernel, kernel-devel
 %if 0%{?fedora} >= 8 || 0%{?rhel} >= 6
 BuildRequires: popt-devel
 %endif
+# can't be built on platforms where we don't provide 32-bit kernel
+ExcludeArch: s390 sparc sparcv9
 
 %description
 The main goal of the keepalived project is to add a strong & robust keepalive
@@ -101,6 +103,9 @@ fi
 
 
 %changelog
+* Sun Jan 16 2011 Dan Horák <dan[at]danny.cz> 1.1.20-2
+- exclude arches where we don't provide 32-bit kernel
+
 * Sun May 23 2010 Matthias Saou <http://freshrpms.net/> 1.1.20-1
 - Update to 1.1.20 (#589923).
 - Update BR conditional for RHEL6.
