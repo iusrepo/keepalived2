@@ -1,7 +1,7 @@
 Summary: HA monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.1.20
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -103,6 +103,9 @@ fi
 
 
 %changelog
+* Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.1.20-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
 * Sun Jan 16 2011 Dan Horák <dan[at]danny.cz> 1.1.20-2
 - exclude arches where we don't provide 32-bit kernel
 
