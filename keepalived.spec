@@ -1,7 +1,7 @@
-Summary: HA monitor built upon LVS, VRRP and service pollers
+Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.2.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -14,6 +14,12 @@ Requires(post): /sbin/chkconfig
 Requires(preun): /sbin/service, /sbin/chkconfig
 Requires(postun): /sbin/service
 BuildRequires: openssl-devel
+%if 0%{?fedora:1} || 0%{?rhel} >= 6
+BuildRequires: libnl-devel
+%else
+# The RHEL <= 5 libnl is too old for the compilation to work
+BuildConflicts: libnl-devel < 1.1
+%endif
 # We need both of these for proper LVS support
 BuildRequires: kernel, kernel-devel
 # We need popt, popt-devel is split out of rpm in Fedora 8+ and RHEL 6+
@@ -103,6 +109,9 @@ fi
 
 
 %changelog
+* Tue Jul 23 2011 Matthias Saou <http://freshrpms.net/> 1.2.2-2
+- Build against libnl for Fedora. RHEL's libnl is too old.
+
 * Sat May 21 2011 Matthias Saou <http://freshrpms.net/> 1.2.2-1
 - Update to 1.2.2.
 
