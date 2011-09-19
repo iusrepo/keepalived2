@@ -1,18 +1,20 @@
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.2.2
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
-Source1: keepalived.init
+Source1: keepalived.service
 Patch0: keepalived-1.1.14-installmodes.patch
 Patch1: keepalived-1.1.19-fix-ipvs-loading.patch
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Requires(post): /sbin/chkconfig
-Requires(preun): /sbin/service, /sbin/chkconfig
-Requires(postun): /sbin/service
+Patch2: keepalived-1.2.2-ip_vs.h-pathfix.patch
+Requires(post): systemd-sysv
+Requires(post): systemd-units
+Requires(preun): systemd-units
+Requires(postun): systemd-units
+BuildRequires: systemd-units
 BuildRequires: openssl-devel
 %if 0%{?fedora:1} || 0%{?rhel} >= 6
 BuildRequires: libnl-devel
@@ -21,7 +23,7 @@ BuildRequires: libnl-devel
 BuildConflicts: libnl-devel < 1.1
 %endif
 # We need both of these for proper LVS support
-BuildRequires: kernel, kernel-devel
+BuildRequires: kernel, kernel-devel, kernel-headers
 # We need popt, popt-devel is split out of rpm in Fedora 8+ and RHEL 6+
 %if 0%{?fedora} >= 8 || 0%{?rhel} >= 6
 BuildRequires: popt-devel
@@ -46,6 +48,7 @@ healthchecks and LVS directors failover.
 %setup -q
 %patch0 -p1 -b .installmodes
 %patch1 -p1 -b .fix-ipvs-loading
+%patch2 -p1 -b .pathfix
 
 
 %build
@@ -56,13 +59,13 @@ KERNELDIR=$(ls -1d --sort t /lib/modules/*/build | head -1)
 
 
 %install
-%{__rm} -rf %{buildroot}
 %{__make} install DESTDIR=%{buildroot}
 # Remove "samples", as we include them in %%doc
 %{__rm} -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
-# Overwrite the init script with our LSB compliant one
+rm -rf %{buildroot}%{_sysconfdir}/rc.d/init.d/
+mkdir -p %{buildroot}%{_unitdir}
 %{__install} -p -m 0755 %{SOURCE1} \
-    %{buildroot}%{_sysconfdir}/rc.d/init.d/keepalived
+    %{buildroot}%{_unitdir}/keepalived.service
 
 
 %check
@@ -73,34 +76,43 @@ if ! grep -q "IPVS_SUPPORT='_WITH_LVS_'" config.log; then
     exit 1
 fi
 
-
-%clean
-%{__rm} -rf %{buildroot}
-
-
 %post
-/sbin/chkconfig --add keepalived
+if [ $1 -eq 1 ] ; then 
+    # Initial installation 
+    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+fi
 
 %preun
-if [ $1 -eq 0 ]; then
-    /sbin/service keepalived stop &>/dev/null || :
-    /sbin/chkconfig --del keepalived
+if [ $1 -eq 0 ] ; then
+    # Package removal, not upgrade
+    /bin/systemctl --no-reload disable keepalived.service > /dev/null 2>&1 || :
+    /bin/systemctl stop keepalived.service > /dev/null 2>&1 || :
 fi
 
 %postun
-if [ $1 -ge 1 ]; then
-    /sbin/service keepalived condrestart &>/dev/null || :
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+if [ $1 -ge 1 ] ; then
+    # Package upgrade, not uninstall
+    /bin/systemctl try-restart keepalived.service >/dev/null 2>&1 || :
 fi
 
+%triggerun -- keepalived < 1.2.2-3
+# Save the current service runlevel info
+# User must manually run systemd-sysv-convert --apply keepalived
+# to migrate them to systemd targets
+/usr/bin/systemd-sysv-convert --save keepalived >/dev/null 2>&1 ||:
+
+# Run these because the SysV package being removed won't do them
+/sbin/chkconfig --del keepalived >/dev/null 2>&1 || :
+/bin/systemctl try-restart keepalived.service >/dev/null 2>&1 || :
 
 %files
-%defattr(-,root,root,-)
 %doc AUTHOR ChangeLog CONTRIBUTORS COPYING README TODO
 %doc doc/keepalived.conf.SYNOPSIS doc/samples/
 %dir %{_sysconfdir}/keepalived/
 %config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/keepalived
-%{_sysconfdir}/rc.d/init.d/keepalived
+%{_unitdir}/keepalived.service
 %{_bindir}/genhash
 %{_sbindir}/keepalived
 %{_mandir}/man1/genhash.1*
@@ -109,6 +121,10 @@ fi
 
 
 %changelog
+* Mon Sep 19 2011 Tom Callaway <spot@fedoraproject.org> - 1.2.2-3
+- convert to systemd
+- fix ip_vs.h path searching in configure
+
 * Tue Jul 23 2011 Matthias Saou <http://freshrpms.net/> 1.2.2-2
 - Build against libnl for Fedora. RHEL's libnl is too old.
 
