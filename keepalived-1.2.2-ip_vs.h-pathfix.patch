@@ -1,0 +1,12 @@
+diff -up keepalived-1.2.2/configure.pathfix keepalived-1.2.2/configure
+--- keepalived-1.2.2/configure.pathfix	2011-09-19 12:31:19.615258629 -0400
++++ keepalived-1.2.2/configure	2011-09-19 12:31:38.872000057 -0400
+@@ -3973,7 +3973,7 @@ $as_echo "$as_me: WARNING: Cannot determ
+ 
+ IPVS_SUPPORT="_WITHOUT_LVS_"
+ if test "$enable_lvs" != "no"; then
+-  ac_fn_c_check_header_mongrel "$LINENO" "net/ip_vs.h" "ac_cv_header_net_ip_vs_h" "$ac_includes_default"
++  ac_fn_c_check_header_mongrel "$LINENO" "linux/ip_vs.h" "ac_cv_header_net_ip_vs_h" "$ac_includes_default"
+ if test "x$ac_cv_header_net_ip_vs_h" = x""yes; then :
+   IPVS_SUPPORT="_WITH_LVS_"
+ else
