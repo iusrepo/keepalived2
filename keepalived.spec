@@ -1,7 +1,7 @@
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.2.2
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -121,6 +121,9 @@ fi
 
 
 %changelog
+* Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.2.2-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
 * Mon Sep 19 2011 Tom Callaway <spot@fedoraproject.org> - 1.2.2-3
 - convert to systemd
 - fix ip_vs.h path searching in configure
