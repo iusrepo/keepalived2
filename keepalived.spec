@@ -1,7 +1,7 @@
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.2.2
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -10,6 +10,7 @@ Source1: keepalived.service
 Patch0: keepalived-1.1.14-installmodes.patch
 Patch1: keepalived-1.1.19-fix-ipvs-loading.patch
 Patch2: keepalived-1.2.2-ip_vs.h-pathfix.patch
+Patch3: keepalived-1.2.2-fix-ipv4-addr-compare.patch
 Requires(post): systemd-sysv
 Requires(post): systemd-units
 Requires(preun): systemd-units
@@ -49,6 +50,7 @@ healthchecks and LVS directors failover.
 %patch0 -p1 -b .installmodes
 %patch1 -p1 -b .fix-ipvs-loading
 %patch2 -p1 -b .pathfix
+%patch3 -p1 -b .fix-ipv4-addr-compare
 
 
 %build
@@ -121,6 +123,9 @@ fi
 
 
 %changelog
+* Tue May 08 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.2-5
+- Fix IPv4 address comparison (#768119).
+
 * Fri Jan 13 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.2.2-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
 

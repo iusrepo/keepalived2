@@ -1,0 +1,12 @@
+diff -Naupr keepalived-1.2.2.orig/keepalived/include/check_data.h keepalived-1.2.2/keepalived/include/check_data.h
+--- keepalived-1.2.2.orig/keepalived/include/check_data.h	2011-01-16 05:04:51.000000000 -0600
++++ keepalived-1.2.2/keepalived/include/check_data.h	2012-03-20 08:59:33.963288928 -0500
+@@ -163,7 +163,7 @@ static inline int sockstorage_equal(cons
+ 		struct sockaddr_in *a1 = (struct sockaddr_in *) s1;
+ 		struct sockaddr_in *a2 = (struct sockaddr_in *) s2;
+ 
+-		if ((a1->sin_addr.s_addr == a1->sin_addr.s_addr) &&
++		if ((a1->sin_addr.s_addr == a2->sin_addr.s_addr) &&
+ 		    (a1->sin_port == a2->sin_port))
+ 			return 1;
+ 	}
