@@ -1,6 +1,6 @@
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Name: keepalived
-Version: 1.2.3
+Version: 1.2.4
 Release: 1%{?dist}
 License: GPLv2+
 Group: Applications/System
@@ -8,7 +8,6 @@ URL: http://www.keepalived.org/
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
 Patch0: keepalived-1.1.14-installmodes.patch
-Patch1: keepalived-1.2.3-configure-autoreconf.patch
 Requires(post): systemd-sysv
 Requires(post): systemd-units
 Requires(preun): systemd-units
@@ -46,7 +45,6 @@ healthchecks and LVS directors failover.
 %prep
 %setup -q
 %patch0 -p1 -b .installmodes
-%patch1 -p1 -b .autoreconf
 
 
 %build
@@ -119,6 +117,9 @@ fi
 
 
 %changelog
+* Wed Aug 01 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.4-1
+- Update to 1.2.4.
+
 * Mon Jul 23 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.3-1
 - Update to 1.2.3.
 
