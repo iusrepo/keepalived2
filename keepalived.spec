@@ -1,6 +1,6 @@
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Name: keepalived
-Version: 1.2.4
+Version: 1.2.5
 Release: 1%{?dist}
 License: GPLv2+
 Group: Applications/System
@@ -26,6 +26,8 @@ BuildRequires: kernel, kernel-devel, kernel-headers
 %if 0%{?fedora} >= 8 || 0%{?rhel} >= 6
 BuildRequires: popt-devel
 %endif
+# We need net-snmp-devel for SNMP support
+BuildRequires: net-snmp-devel
 # can't be built on platforms where we don't provide 32-bit kernel
 ExcludeArch: s390 sparc sparcv9
 
@@ -50,7 +52,7 @@ healthchecks and LVS directors failover.
 %build
 # Get the most recent available kernel build dir, allows to expand arch too
 KERNELDIR=$(ls -1d --sort t /lib/modules/*/build | head -1)
-%configure --with-kernel-dir="${KERNELDIR}"
+%configure --with-kernel-dir="${KERNELDIR}" --enable-snmp
 %{__make} %{?_smp_mflags} STRIP=/bin/true
 
 
@@ -60,8 +62,11 @@ KERNELDIR=$(ls -1d --sort t /lib/modules/*/build | head -1)
 %{__rm} -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
 rm -rf %{buildroot}%{_sysconfdir}/rc.d/init.d/
 mkdir -p %{buildroot}%{_unitdir}
+mkdir -p %{buildroot}%{_datadir}/snmp/mibs
 %{__install} -p -m 0755 %{SOURCE1} \
     %{buildroot}%{_unitdir}/keepalived.service
+%{__install} -p -m 0644 doc/KEEPALIVED-MIB \
+    %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB
 
 
 %check
@@ -109,6 +114,7 @@ fi
 %config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/keepalived
 %{_unitdir}/keepalived.service
+%{_datadir}/snmp/mibs/KEEPALIVED-MIB
 %{_bindir}/genhash
 %{_sbindir}/keepalived
 %{_mandir}/man1/genhash.1*
@@ -117,6 +123,9 @@ fi
 
 
 %changelog
+* Mon Aug 13 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.5-1
+- Update to 1.2.5.
+
 * Wed Aug 01 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.4-1
 - Update to 1.2.4.
 
