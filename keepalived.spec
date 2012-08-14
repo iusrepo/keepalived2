@@ -1,7 +1,7 @@
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.2.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -66,7 +66,7 @@ mkdir -p %{buildroot}%{_datadir}/snmp/mibs
 %{__install} -p -m 0755 %{SOURCE1} \
     %{buildroot}%{_unitdir}/keepalived.service
 %{__install} -p -m 0644 doc/KEEPALIVED-MIB \
-    %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB
+    %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
 
 
 %check
@@ -114,7 +114,7 @@ fi
 %config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/keepalived
 %{_unitdir}/keepalived.service
-%{_datadir}/snmp/mibs/KEEPALIVED-MIB
+%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
 %{_bindir}/genhash
 %{_sbindir}/keepalived
 %{_mandir}/man1/genhash.1*
@@ -123,6 +123,9 @@ fi
 
 
 %changelog
+* Tue Aug 14 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.5-2
+- Install KEEPALIVED-MIB as KEEPALIVED-MIB.txt
+
 * Mon Aug 13 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.5-1
 - Update to 1.2.5.
 
