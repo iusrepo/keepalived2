@@ -1,6 +1,6 @@
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Name: keepalived
-Version: 1.2.5
+Version: 1.2.6
 Release: 2%{?dist}
 License: GPLv2+
 Group: Applications/System
@@ -123,6 +123,9 @@ fi
 
 
 %changelog
+* Mon Aug 20 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.6-1
+- Update to 1.2.6.
+
 * Tue Aug 14 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.5-2
 - Install KEEPALIVED-MIB as KEEPALIVED-MIB.txt
 
