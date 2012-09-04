@@ -4,8 +4,10 @@ After=syslog.target network.target
 
 [Service]
 Type=forking
+KillMode=process
 EnvironmentFile=-/etc/sysconfig/keepalived
 ExecStart=/usr/sbin/keepalived $KEEPALIVED_OPTIONS
+ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
 WantedBy=multi-user.target

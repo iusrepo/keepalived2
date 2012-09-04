@@ -1,7 +1,7 @@
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Name: keepalived
-Version: 1.2.6
-Release: 2%{?dist}
+Version: 1.2.7
+Release: 1%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -123,6 +123,10 @@ fi
 
 
 %changelog
+* Tue Sep 04 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.7-1
+- Update to 1.2.7.
+- Fix systemd service file (#769726).
+
 * Mon Aug 20 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.6-1
 - Update to 1.2.6.
 
