@@ -1,7 +1,7 @@
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Name: keepalived
 Version: 1.2.7
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.keepalived.org/
@@ -78,24 +78,13 @@ if ! grep -q "IPVS_SUPPORT='_WITH_LVS_'" config.log; then
 fi
 
 %post
-if [ $1 -eq 1 ] ; then 
-    # Initial installation 
-    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
-fi
+%systemd_post keepalived.service
 
 %preun
-if [ $1 -eq 0 ] ; then
-    # Package removal, not upgrade
-    /bin/systemctl --no-reload disable keepalived.service > /dev/null 2>&1 || :
-    /bin/systemctl stop keepalived.service > /dev/null 2>&1 || :
-fi
+%systemd_preun keepalived.service
 
 %postun
-/bin/systemctl daemon-reload >/dev/null 2>&1 || :
-if [ $1 -ge 1 ] ; then
-    # Package upgrade, not uninstall
-    /bin/systemctl try-restart keepalived.service >/dev/null 2>&1 || :
-fi
+%systemd_postun_with_restart keepalived.service
 
 %triggerun -- keepalived < 1.2.2-3
 # Save the current service runlevel info
@@ -123,6 +112,9 @@ fi
 
 
 %changelog
+* Mon Sep 24 2012 Václav Pavlín <vpavlin@redhat.com> - 1.2.7-2
+- Scriptlets replaced with new systemd macros (#850173)
+
 * Tue Sep 04 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.7-1
 - Update to 1.2.7.
 - Fix systemd service file (#769726).
