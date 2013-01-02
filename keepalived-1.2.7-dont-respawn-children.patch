@@ -1,0 +1,109 @@
+From 12e58a6c40b3bfa18f0db5db9e36ed09f68d7a0c Mon Sep 17 00:00:00 2001
+From: Ryan O'Hara <rohara@redhat.com>
+Date: Mon, 29 Oct 2012 14:10:57 -0500
+Subject: [PATCH 01/10] Add option to prevent respawn of child processes.
+
+This patch adds a command-line option (--dont-respawn, -R) that will
+prevent the child processes from respawning. When this option is
+specified, if either the checker or vrrp child processes exit the
+parent process will raise the SIGTERM signal and exit.
+
+Signed-off-by: Ryan O'Hara <rohara@redhat.com>
+---
+ keepalived/check/check_daemon.c |    9 +++++++--
+ keepalived/core/main.c          |   10 +++++++++-
+ keepalived/vrrp/vrrp_daemon.c   |    9 +++++++--
+ 3 files changed, 23 insertions(+), 5 deletions(-)
+
+diff --git a/keepalived/check/check_daemon.c b/keepalived/check/check_daemon.c
+index 1119075..68759f4 100644
+--- a/keepalived/check/check_daemon.c
++++ b/keepalived/check/check_daemon.c
+@@ -227,8 +227,13 @@ check_respawn_thread(thread_t * thread)
+ 	}
+ 
+ 	/* We catch a SIGCHLD, handle it */
+-	log_message(LOG_ALERT, "Healthcheck child process(%d) died: Respawning", pid);
+-	start_check_child();
++	if (!(debug & 64)) {
++		log_message(LOG_ALERT, "Healthcheck child process(%d) died: Respawning", pid);
++		start_check_child();
++	} else {
++		log_message(LOG_ALERT, "Healthcheck child process(%d) died: Exiting", pid);
++		raise(SIGTERM);
++	}
+ 	return 0;
+ }
+ 
+diff --git a/keepalived/core/main.c b/keepalived/core/main.c
+index 57fa134..9445a4c 100644
+--- a/keepalived/core/main.c
++++ b/keepalived/core/main.c
+@@ -146,6 +146,7 @@ usage(const char *prog)
+ 		"  %s --check              -C    Only run with Health-checker subsystem.\n"
+ 		"  %s --dont-release-vrrp  -V    Dont remove VRRP VIPs & VROUTEs on daemon stop.\n"
+ 		"  %s --dont-release-ipvs  -I    Dont remove IPVS topology on daemon stop.\n"
++		"  %s --dont-respawn       -R    Dont respawn child processes.\n"
+ 		"  %s --dont-fork          -n    Dont fork the daemon process.\n"
+ 		"  %s --use-file           -f    Use the specified configuration file.\n"
+ 		"                                Default is /etc/keepalived/keepalived.conf.\n"
+@@ -165,7 +166,7 @@ usage(const char *prog)
+ #ifdef _WITH_SNMP_
+ 		prog,
+ #endif
+-		prog, prog, prog, prog, prog, prog, prog);
++		prog, prog, prog, prog, prog, prog, prog, prog);
+ }
+ 
+ /* Command line parser */
+@@ -184,6 +185,7 @@ parse_cmdline(int argc, char **argv)
+ 		{"log-facility", 'S', POPT_ARG_STRING, &option_arg, 'S'},
+ 		{"dont-release-vrrp", 'V', POPT_ARG_NONE, NULL, 'V'},
+ 		{"dont-release-ipvs", 'I', POPT_ARG_NONE, NULL, 'I'},
++		{"dont-respawn", 'R', POPT_ARG_NONE, NULL, 'R'},
+ 		{"dont-fork", 'n', POPT_ARG_NONE, NULL, 'n'},
+ 		{"dump-conf", 'd', POPT_ARG_NONE, NULL, 'd'},
+ 		{"use-file", 'f', POPT_ARG_STRING, &option_arg, 'f'},
+@@ -232,6 +234,9 @@ parse_cmdline(int argc, char **argv)
+ 	case 'D':
+ 		debug |= 32;
+ 		break;
++	case 'R':
++		debug |= 64;
++		break;
+ 	case 'S':
+ 		log_facility = LOG_FACILITY[atoi(option_arg)].facility;
+ 		break;
+@@ -282,6 +287,9 @@ parse_cmdline(int argc, char **argv)
+ 		case 'D':
+ 			debug |= 32;
+ 			break;
++		case 'R':
++			debug |= 64;
++			break;
+ 		case 'S':
+ 			log_facility = LOG_FACILITY[atoi(option_arg)].facility;
+ 			break;
+diff --git a/keepalived/vrrp/vrrp_daemon.c b/keepalived/vrrp/vrrp_daemon.c
+index 23ff09f..cee6c80 100644
+--- a/keepalived/vrrp/vrrp_daemon.c
++++ b/keepalived/vrrp/vrrp_daemon.c
+@@ -249,8 +249,13 @@ vrrp_respawn_thread(thread_t * thread)
+ 	}
+ 
+ 	/* We catch a SIGCHLD, handle it */
+-	log_message(LOG_ALERT, "VRRP child process(%d) died: Respawning", pid);
+-	start_vrrp_child();
++	if (!(debug & 64)) {
++		log_message(LOG_ALERT, "VRRP child process(%d) died: Respawning", pid);
++		start_vrrp_child();
++	} else {
++		log_message(LOG_ALERT, "VRRP child process(%d) died: Exiting", pid);
++		raise(SIGTERM);
++	}
+ 	return 0;
+ }
+ 
+-- 
+1.7.1
+

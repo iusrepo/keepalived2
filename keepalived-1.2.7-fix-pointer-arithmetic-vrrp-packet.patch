@@ -1,0 +1,32 @@
+From f9264a16d6a651a15731ba43d917f0b311257d47 Mon Sep 17 00:00:00 2001
+From: Ryan O'Hara <rohara@redhat.com>
+Date: Fri, 16 Nov 2012 14:54:37 -0600
+Subject: [PATCH 05/10] Fix pointer arithmetic for VRRP packet
+
+When using IPSEC AH authentication, the pointer arithmetic used to get
+the location of the VRRP packet is incorrect. The address of the IPSEC
+header must be cast as (char *) in order to get correct address of the
+VRRP packet. Without this patch, vrrp_in_chk() will fail to verify
+incoming VRRP packets when IPSEC AH is enabled.
+
+Signed-off-by: Ryan O'Hara <rohara@redhat.com>
+---
+ keepalived/vrrp/vrrp.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/keepalived/vrrp/vrrp.c b/keepalived/vrrp/vrrp.c
+index 1248fb8..0a8bc3f 100644
+--- a/keepalived/vrrp/vrrp.c
++++ b/keepalived/vrrp/vrrp.c
+@@ -238,7 +238,7 @@ vrrp_in_chk(vrrp_rt * vrrp, char *buffer)
+ 
+ 		if (vrrp->auth_type == VRRP_AUTH_AH) {
+ 			ah = (ipsec_ah *) (buffer + ihl);
+-			hd = (vrrp_pkt *) (ah + vrrp_ipsecah_len());
++			hd = (vrrp_pkt *) ((char *) ah + vrrp_ipsecah_len());
+ 		} else {
+ 			hd = (vrrp_pkt *) (buffer + ihl);
+ 		}
+-- 
+1.7.1
+

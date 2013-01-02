@@ -1,0 +1,46 @@
+From fd8665b424457accfa37703d4c9456be22ab8b53 Mon Sep 17 00:00:00 2001
+From: Ryan O'Hara <rohara@redhat.com>
+Date: Mon, 10 Dec 2012 13:25:01 -0600
+Subject: [PATCH 10/10] Remove log_message calls from if_get_by_ifname.
+
+The if_get_by_ifname function would log a message if either the
+if_queue list was empty or if the interface name was not present in
+the list. Since if_get_by_ifname is called to check for the existence
+of an interface before adding it to the list, the "No such interface"
+message is logged whenever adding a new interface to this list. This
+is normal but can be confusing. Since if_get_by_ifname returns NULL
+when the interface does not exist, the caller should be responsible
+for logging any error messages.
+
+Signed-off-by: Ryan O'Hara <rohara@redhat.com>
+---
+ keepalived/vrrp/vrrp_if.c |    6 +-----
+ 1 files changed, 1 insertions(+), 5 deletions(-)
+
+diff --git a/keepalived/vrrp/vrrp_if.c b/keepalived/vrrp/vrrp_if.c
+index df38d9d..6d5735e 100644
+--- a/keepalived/vrrp/vrrp_if.c
++++ b/keepalived/vrrp/vrrp_if.c
+@@ -85,18 +85,14 @@ if_get_by_ifname(const char *ifname)
+ 	interface *ifp;
+ 	element e;
+ 
+-	if (LIST_ISEMPTY(if_queue)) {
+-		log_message(LOG_ERR, "Interface queue is empty");
++	if (LIST_ISEMPTY(if_queue))
+ 		return NULL;
+-	}
+ 
+ 	for (e = LIST_HEAD(if_queue); e; ELEMENT_NEXT(e)) {
+ 		ifp = ELEMENT_DATA(e);
+ 		if (!strcmp(ifp->ifname, ifname))
+ 			return ifp;
+ 	}
+-
+-	log_message(LOG_ERR, "No such interface, %s", ifname);
+ 	return NULL;
+ }
+ 
+-- 
+1.7.1
+

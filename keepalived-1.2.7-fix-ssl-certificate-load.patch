@@ -1,0 +1,34 @@
+From 3cc70656961f0384b1db030e0697a00af0b30e65 Mon Sep 17 00:00:00 2001
+From: Ryan O'Hara <rohara@redhat.com>
+Date: Mon, 19 Nov 2012 09:51:50 -0600
+Subject: [PATCH 06/10] Load SSL certificate correctly.
+
+This patch fixes a problem where keepalived will attempt to load an
+SSL keyfile as a certificate, resulting in failure to initialize SSL
+context.
+
+Signed-off-by: Ryan O'Hara <rohara@redhat.com>
+---
+ keepalived/check/check_ssl.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/keepalived/check/check_ssl.c b/keepalived/check/check_ssl.c
+index 618d9a4..574ba30 100644
+--- a/keepalived/check/check_ssl.c
++++ b/keepalived/check/check_ssl.c
+@@ -86,10 +86,10 @@ build_ssl_ctx(void)
+ 	}
+ 
+ 	/* Load our keys and certificates */
+-	if (check_data->ssl->keyfile)
++	if (check_data->ssl->certfile)
+ 		if (!
+ 		    (SSL_CTX_use_certificate_chain_file
+-		     (ssl->ctx, check_data->ssl->keyfile))) {
++		     (ssl->ctx, check_data->ssl->certfile))) {
+ 			log_message(LOG_INFO,
+ 			       "SSL error : Cant load certificate file...");
+ 			return 0;
+-- 
+1.7.1
+

@@ -1,0 +1,126 @@
+From da4dd38a7216f6794886b9e8c310273869fcb324 Mon Sep 17 00:00:00 2001
+From: Ryan O'Hara <rohara@redhat.com>
+Date: Tue, 30 Oct 2012 10:42:26 -0500
+Subject: [PATCH 02/10] Remove duplicate command-line option code
+
+This patch removes unnecessary code to process command-line
+options. All options can be processed with a single while loop that
+calls poptGetNextOpt. This patch also adds code to check for errors
+while processing options. Note that errors encountered while
+processing command-line options are fatal.
+
+Signed-off-by: Ryan O'Hara <rohara@redhat.com>
+---
+ keepalived/core/main.c |   83 +++++++++--------------------------------------
+ 1 files changed, 16 insertions(+), 67 deletions(-)
+
+diff --git a/keepalived/core/main.c b/keepalived/core/main.c
+index 9445a4c..ef4bbb9 100644
+--- a/keepalived/core/main.c
++++ b/keepalived/core/main.c
+@@ -200,75 +200,18 @@ parse_cmdline(int argc, char **argv)
+ 		{NULL, 0, 0, NULL, 0}
+ 	};
+ 
+-	context =
+-	    poptGetContext(PROG, argc, (const char **) argv, options_table, 0);
+-	if ((c = poptGetNextOpt(context)) < 0) {
+-		return;
+-	}
+-
+-	/* The first option car */
+-	switch (c) {
+-	case 'v':
+-		fprintf(stderr, VERSION_STRING);
+-		exit(0);
+-		break;
+-	case 'h':
+-		usage(argv[0]);
+-		exit(0);
+-		break;
+-	case 'l':
+-		debug |= 1;
+-		break;
+-	case 'n':
+-		debug |= 2;
+-		break;
+-	case 'd':
+-		debug |= 4;
+-		break;
+-	case 'V':
+-		debug |= 8;
+-		break;
+-	case 'I':
+-		debug |= 16;
+-		break;
+-	case 'D':
+-		debug |= 32;
+-		break;
+-	case 'R':
+-		debug |= 64;
+-		break;
+-	case 'S':
+-		log_facility = LOG_FACILITY[atoi(option_arg)].facility;
+-		break;
+-	case 'f':
+-		conf_file = option_arg;
+-		break;
+-	case 'P':
+-		daemon_mode |= 1;
+-		break;
+-	case 'C':
+-		daemon_mode |= 2;
+-		break;
+-	case 'p':
+-		main_pidfile = option_arg;
+-		break;
+-	case 'c':
+-		checkers_pidfile = option_arg;
+-		break;
+-	case 'r':
+-		vrrp_pidfile = option_arg;
+-		break;
+-#ifdef _WITH_SNMP_
+-	case 'x':
+-		snmp = 1;
+-		break;
+-#endif
+-	}
++	context = poptGetContext(PROG, argc, (const char **) argv, options_table, 0);
+ 
+-	/* the others */
+-	/* fixme: why is this duplicated? */
+ 	while ((c = poptGetNextOpt(context)) >= 0) {
+ 		switch (c) {
++		case 'v':
++			fprintf(stderr, VERSION_STRING);
++			exit(0);
++			break;
++		case 'h':
++			usage(argv[0]);
++			exit(0);
++			break;
+ 		case 'l':
+ 			debug |= 1;
+ 			break;
+@@ -319,10 +262,16 @@ parse_cmdline(int argc, char **argv)
+ 		}
+ 	}
+ 
++	if (c < -1) {
++		fprintf(stderr, "%s '%s'\n", poptStrerror(c),
++			poptBadOption(context, POPT_BADOPTION_NOALIAS));
++		poptFreeContext(context);
++		exit(1);
++	}
++
+ 	/* check unexpected arguments */
+ 	if ((option_arg = (char *) poptGetArg(context))) {
+ 		fprintf(stderr, "unexpected argument %s\n", option_arg);
+-		return;
+ 	}
+ 
+ 	/* free the allocated context */
+-- 
+1.7.1
+

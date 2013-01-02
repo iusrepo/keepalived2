@@ -1,81 +1,92 @@
-Summary: High Availability monitor built upon LVS, VRRP and service pollers
+%bcond_without snmp
+%bcond_without vrrp
+%bcond_with profile
+%bcond_with debug
+
 Name: keepalived
+Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.7
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
-Group: Applications/System
 URL: http://www.keepalived.org/
+Group: System Environment/Daemons
+
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
-Source1: keepalived.service
-Patch0: keepalived-1.1.14-installmodes.patch
-Requires(post): systemd-sysv
-Requires(post): systemd-units
-Requires(preun): systemd-units
-Requires(postun): systemd-units
-BuildRequires: systemd-units
-BuildRequires: openssl-devel
-%if 0%{?fedora:1} || 0%{?rhel} >= 6
-BuildRequires: libnl-devel
-%else
-# The RHEL <= 5 libnl is too old for the compilation to work
-BuildConflicts: libnl-devel < 1.1
-%endif
-# We need both of these for proper LVS support
-BuildRequires: kernel, kernel-devel, kernel-headers
-# We need popt, popt-devel is split out of rpm in Fedora 8+ and RHEL 6+
-%if 0%{?fedora} >= 8 || 0%{?rhel} >= 6
-BuildRequires: popt-devel
-%endif
-# We need net-snmp-devel for SNMP support
+Source1: keepalived.init
+
+Patch0: keepalived-1.2.7-dont-respawn-children.patch
+Patch1: keepalived-1.2.7-cleanup-duplicate-option-code.patch
+Patch2: keepalived-1.2.7-generate-usage-message-from-popt.patch
+Patch3: keepalived-1.2.7-update-keepalived-man-page.patch
+Patch4: keepalived-1.2.7-fix-pointer-arithmetic-vrrp-packet.patch
+Patch8: keepalived-1.2.7-fix-primary-ip-address-comparison.patch
+Patch5: keepalived-1.2.7-fix-ssl-certificate-load.patch
+Patch6: keepalived-1.2.7-fix-error-message.patch
+Patch7: keepalived-1.2.7-update-gpl-license.patch
+Patch9: keepalived-1.2.7-remove-debug-messages.patch
+
+Requires(post): /sbin/chkconfig
+Requires(preun): /sbin/chkconfig
+Requires(preun): /sbin/service
+Requires(postun): /sbin/service
+
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+%if %{with snmp}
 BuildRequires: net-snmp-devel
-# can't be built on platforms where we don't provide 32-bit kernel
-ExcludeArch: s390 sparc sparcv9
+%endif
+BuildRequires: openssl-devel
+BuildRequires: libnl-devel
+BuildRequires: kernel-devel
+BuildRequires: popt-devel
 
 %description
-The main goal of the keepalived project is to add a strong & robust keepalive
-facility to the Linux Virtual Server project. This project is written in C with
-multilayer TCP/IP stack checks. Keepalived implements a framework based on
-three family checks : Layer3, Layer4 & Layer5/7. This framework gives the
-daemon the ability to check the state of an LVS server pool. When one of the
-servers of the LVS server pool is down, keepalived informs the linux kernel via
-a setsockopt call to remove this server entry from the LVS topology. In
-addition keepalived implements an independent VRRPv2 stack to handle director
-failover. So in short keepalived is a userspace daemon for LVS cluster nodes
-healthchecks and LVS directors failover.
-
+Keepalived provides simple and robust facilities for load balancing
+and high availability to Linux system and Linux based infrastructures.
+The load balancing framework relies on well-known and widely used
+Linux Virtual Server (IPVS) kernel module providing Layer4 load
+balancing. Keepalived implements a set of checkers to dynamically and
+adaptively maintain and manage load-balanced server pool according
+their health. High availability is achieved by VRRP protocol. VRRP is
+a fundamental brick for router failover. In addition, keepalived
+implements a set of hooks to the VRRP finite state machine providing
+low-level and high-speed protocol interactions. Keepalived frameworks
+can be used independently or all together to provide resilient
+infrastructures.
 
 %prep
 %setup -q
-%patch0 -p1 -b .installmodes
-
+%patch0 -p1
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
 
 %build
-# Get the most recent available kernel build dir, allows to expand arch too
-KERNELDIR=$(ls -1d --sort t /lib/modules/*/build | head -1)
-%configure --with-kernel-dir="${KERNELDIR}" --enable-snmp
+%configure \
+    %{?with_debug:--enable-debug} \
+    %{?with_profile:--enable-profile} \
+    %{!?with_vrrp:--disable-vrrp} \
+    %{?with_snmp:--enable-snmp}
 %{__make} %{?_smp_mflags} STRIP=/bin/true
 
-
 %install
-%{__make} install DESTDIR=%{buildroot}
-# Remove "samples", as we include them in %%doc
-%{__rm} -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
-rm -rf %{buildroot}%{_sysconfdir}/rc.d/init.d/
-mkdir -p %{buildroot}%{_unitdir}
-mkdir -p %{buildroot}%{_datadir}/snmp/mibs
-%{__install} -p -m 0755 %{SOURCE1} \
-    %{buildroot}%{_unitdir}/keepalived.service
-%{__install} -p -m 0644 doc/KEEPALIVED-MIB \
-    %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
+rm -rf %{buildroot}
+make install DESTDIR=%{buildroot}
+rm -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
+%{__install} -p -m 0755 %{SOURCE1} %{buildroot}%{_initrddir}/%{name}
 
+%if %{with snmp}
+mkdir -p %{buildroot}%{_datadir}/snmp/mibs/
+%{__install} -p -m 0644 doc/KEEPALIVED-MIB %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
+%endif
 
-%check
-# A build could silently have LVS support disabled if the kernel includes can't
-# be properly found, we need to avoid that.
-if ! grep -q "IPVS_SUPPORT='_WITH_LVS_'" config.log; then
-    echo "ERROR: We do not want keeepalived lacking LVS support."
-    exit 1
-fi
+%clean
+rm -rf %{buildroot}
 
 %post
 %systemd_post keepalived.service
@@ -86,34 +97,41 @@ fi
 %postun
 %systemd_postun_with_restart keepalived.service
 
-%triggerun -- keepalived < 1.2.2-3
-# Save the current service runlevel info
-# User must manually run systemd-sysv-convert --apply keepalived
-# to migrate them to systemd targets
-/usr/bin/systemd-sysv-convert --save keepalived >/dev/null 2>&1 ||:
-
-# Run these because the SysV package being removed won't do them
-/sbin/chkconfig --del keepalived >/dev/null 2>&1 || :
-/bin/systemctl try-restart keepalived.service >/dev/null 2>&1 || :
-
 %files
+%defattr(-,root,root,-)
+%attr(0755,root,root) %{_sbindir}/keepalived
+%attr(0644,root,root) %{_sysconfdir}/sysconfig/keepalived
+%attr(0644,root,root) %{_sysconfdir}/keepalived/keepalived.conf
 %doc AUTHOR ChangeLog CONTRIBUTORS COPYING README TODO
-%doc doc/keepalived.conf.SYNOPSIS doc/samples/
+%doc doc/keepalived.conf.SYNOPSIS doc/samples/keepalived.conf.*
 %dir %{_sysconfdir}/keepalived/
 %config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/keepalived
-%{_unitdir}/keepalived.service
+%{_sysconfdir}/rc.d/init.d/keepalived
+%if %{with snmp}
 %{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
+%endif
 %{_bindir}/genhash
 %{_sbindir}/keepalived
 %{_mandir}/man1/genhash.1*
 %{_mandir}/man5/keepalived.conf.5*
 %{_mandir}/man8/keepalived.8*
 
-
 %changelog
+* Wed Jan 2 2013 Ryan O'Hara <rohara@redhat.com> - 1.2.7-3
+- Update spec file.
+- Add option to prevent respawn of child processes.
+- Remove duplicate command-line option code.
+- Use popt to generate usage message.
+- Fix pointer arithmetic for VRRP packets.
+- Fix comparison of primary IP address.
+- Fix loading of SSL certificate.
+- Fix typo in error message.
+- Update FSF address in GPLv2 license.
+- Remove debug message from if_get_by_ifname.
+
 * Mon Sep 24 2012 Václav Pavlín <vpavlin@redhat.com> - 1.2.7-2
-- Scriptlets replaced with new systemd macros (#850173)
+- Scriptlets replaced with new systemd macros (#850173).
 
 * Tue Sep 04 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.7-1
 - Update to 1.2.7.
@@ -123,7 +141,7 @@ fi
 - Update to 1.2.6.
 
 * Tue Aug 14 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.5-2
-- Install KEEPALIVED-MIB as KEEPALIVED-MIB.txt
+- Install KEEPALIVED-MIB as KEEPALIVED-MIB.txt.
 
 * Mon Aug 13 2012 Ryan O'Hara <rohara@redhat.com> - 1.2.5-1
 - Update to 1.2.5.

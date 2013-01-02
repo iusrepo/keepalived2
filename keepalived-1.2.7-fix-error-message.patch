@@ -1,0 +1,40 @@
+From c04dfcae58d6449980e38ed5a555d1a86f363f71 Mon Sep 17 00:00:00 2001
+From: Ryan O'Hara <rohara@redhat.com>
+Date: Mon, 19 Nov 2012 10:09:11 -0600
+Subject: [PATCH 07/10] Fix typo in error messages.
+
+Signed-off-by: Ryan O'Hara <rohara@redhat.com>
+---
+ keepalived/vrrp/vrrp_ipaddress.c |    2 +-
+ keepalived/vrrp/vrrp_iproute.c   |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/keepalived/vrrp/vrrp_ipaddress.c b/keepalived/vrrp/vrrp_ipaddress.c
+index c003b1a..51cd488 100644
+--- a/keepalived/vrrp/vrrp_ipaddress.c
++++ b/keepalived/vrrp/vrrp_ipaddress.c
+@@ -165,7 +165,7 @@ alloc_ipaddress(list ip_list, vector_t *strvec, interface *ifp)
+ 			ifp_local = if_get_by_ifname(vector_slot(strvec, ++i));
+ 			if (!ifp_local) {
+ 				log_message(LOG_INFO, "VRRP is trying to assign VIP to unknown %s"
+-				       " interface !!! go out and fixe your conf !!!",
++				       " interface !!! go out and fix your conf !!!",
+ 				       (char *)vector_slot(strvec, i));
+ 				FREE(new);
+ 				return;
+diff --git a/keepalived/vrrp/vrrp_iproute.c b/keepalived/vrrp/vrrp_iproute.c
+index a8feec4..464259c 100644
+--- a/keepalived/vrrp/vrrp_iproute.c
++++ b/keepalived/vrrp/vrrp_iproute.c
+@@ -203,7 +203,7 @@ alloc_route(list rt_list, vector_t *strvec)
+ 			ifp = if_get_by_ifname(vector_slot(strvec, ++i));
+ 			if (!ifp) {
+ 				log_message(LOG_INFO, "VRRP is trying to assign VROUTE to unknown "
+-				       "%s interface !!! go out and fixe your conf !!!",
++				       "%s interface !!! go out and fix your conf !!!",
+ 				       (char *)vector_slot(strvec, i));
+ 				FREE(new);
+ 				return;
+-- 
+1.7.1
+
