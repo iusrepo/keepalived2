@@ -3,10 +3,12 @@
 %bcond_with profile
 %bcond_with debug
 
+%global _hardened_build 1
+
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.7
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -118,6 +120,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Mon Apr 22 2013 Ryan O'Hara <rohara@redhat.com> - 1.2.7-5
+- Build with PIE flags (#955150)
+
 * Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.2.7-4
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
 
