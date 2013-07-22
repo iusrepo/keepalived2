@@ -1,0 +1,26 @@
+From b65b965cbeb0323236c7d39ff9a9c60291cec21c Mon Sep 17 00:00:00 2001
+From: Ryan O'Hara <rohara@redhat.com>
+Date: Mon, 22 Jul 2013 11:08:12 -0500
+Subject: [PATCH] Fix macro in keepalived.conf.5 man page.
+
+Signed-off-by: Ryan O'Hara <rohara@redhat.com>
+---
+ doc/man/man5/keepalived.conf.5 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/doc/man/man5/keepalived.conf.5 b/doc/man/man5/keepalived.conf.5
+index 706d652..fa60b7f 100644
+--- a/doc/man/man5/keepalived.conf.5
++++ b/doc/man/man5/keepalived.conf.5
+@@ -117,7 +117,7 @@ describes the moveable IP for each instance of a group in vrrp_sync_group.
+ Here are described two IPs (on inside_network and on outside_network), 
+ on machine "my_hostname", which belong to the group VG_1 and
+ which will transition together on any state change.
+-.PPa
++.PP
+  #You will need to write another block for outside_network.
+  vrrp_instance inside_network {
+     # Initial state, MASTER|BACKUP
+-- 
+1.8.1.4
+
