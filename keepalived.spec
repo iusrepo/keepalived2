@@ -8,7 +8,7 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.7
-Release: 6%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -27,15 +27,15 @@ Patch6: keepalived-1.2.7-fix-error-message.patch
 Patch7: keepalived-1.2.7-update-gpl-license.patch
 Patch9: keepalived-1.2.7-remove-debug-messages.patch
 
-Requires(post): /sbin/chkconfig
-Requires(preun): /sbin/chkconfig
-Requires(preun): /sbin/service
-Requires(postun): /sbin/service
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 %if %{with snmp}
 BuildRequires: net-snmp-devel
 %endif
+BuildRequires: systemd-units
 BuildRequires: openssl-devel
 BuildRequires: libnl-devel
 BuildRequires: kernel-devel
@@ -121,6 +121,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Mon Jul 22 2013 Ryan O'Hara <rohara@redhat.com> - 1.2.7-7
+- Fix systemd requirements.
+
 * Mon Jul 22 2013 Ryan O'Hara <rohara@redhat.com> - 1.2.7-6
 - Install the systemd unit file, not the init script.
 
