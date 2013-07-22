@@ -8,13 +8,13 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.7
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
 
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
-Source1: keepalived.init
+Source1: keepalived.service
 
 Patch0: keepalived-1.2.7-dont-respawn-children.patch
 Patch1: keepalived-1.2.7-cleanup-duplicate-option-code.patch
@@ -79,12 +79,13 @@ infrastructures.
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
+rm -rf %{buildroot}%{_initrddir}/
 rm -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
-%{__install} -p -m 0755 %{SOURCE1} %{buildroot}%{_initrddir}/%{name}
+%{__install} -p -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/keepalived.service
 
 %if %{with snmp}
 mkdir -p %{buildroot}%{_datadir}/snmp/mibs/
-%{__install} -p -m 0644 doc/KEEPALIVED-MIB %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
+%{__install} -p -D -m 0644 doc/KEEPALIVED-MIB %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
 %endif
 
 %clean
@@ -109,17 +110,20 @@ rm -rf %{buildroot}
 %dir %{_sysconfdir}/keepalived/
 %config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
 %config(noreplace) %{_sysconfdir}/sysconfig/keepalived
-%{_sysconfdir}/rc.d/init.d/keepalived
 %if %{with snmp}
 %{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
 %endif
 %{_bindir}/genhash
+%{_unitdir}/keepalived.service
 %{_sbindir}/keepalived
 %{_mandir}/man1/genhash.1*
 %{_mandir}/man5/keepalived.conf.5*
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Mon Jul 22 2013 Ryan O'Hara <rohara@redhat.com> - 1.2.7-6
+- Install the systemd unit file, not the init script.
+
 * Mon Apr 22 2013 Ryan O'Hara <rohara@redhat.com> - 1.2.7-5
 - Build with PIE flags (#955150)
 
