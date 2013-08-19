@@ -1,0 +1,127 @@
+From 9bb312d3a1ee8c6ddcbf2f8e106cea457487b0aa Mon Sep 17 00:00:00 2001
+From: Pasi Kärkkäinen <pasik@iki.fi>
+Date: Mon, 19 Aug 2013 11:15:16 -0500
+Subject: [PATCH] Add To header for SMTP alerts.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Pasi Kärkkäinen <pasik@iki.fi>
+---
+ keepalived/core/smtp.c    | 42 +++++++++++++++++++++++++++++++++++++++++-
+ keepalived/include/smtp.h |  4 +++-
+ 2 files changed, 44 insertions(+), 2 deletions(-)
+
+diff --git a/keepalived/core/smtp.c b/keepalived/core/smtp.c
+index ff9df02..fd414c4 100644
+--- a/keepalived/core/smtp.c
++++ b/keepalived/core/smtp.c
+@@ -80,6 +80,7 @@ free_smtp_all(smtp_thread_arg * smtp_arg)
+ 	FREE(smtp_arg->buffer);
+ 	FREE(smtp_arg->subject);
+ 	FREE(smtp_arg->body);
++	FREE(smtp_arg->email_to);
+ 	FREE(smtp_arg);
+ }
+ 
+@@ -435,6 +436,43 @@ data_code(thread_t * thread, int status)
+ 	return 0;
+ }
+ 
++/* 
++ * Build a comma separated string of smtp recipient email addresses
++ * for the email message To-header.
++ */
++void
++build_to_header_rcpt_addrs(smtp_thread_arg *smtp_arg)
++{
++	char *fetched_email;
++	char *email_to_addrs;
++	int email_addrs_max;
++
++	if (smtp_arg == NULL) return;
++	email_to_addrs = smtp_arg->email_to;
++	smtp_arg->email_it = 0;
++
++	email_addrs_max = (SMTP_BUFFER_MAX / SMTP_EMAIL_ADDR_MAX_LENGTH) - 1;
++
++	while ((fetched_email = fetch_next_email(smtp_arg)) != NULL) {
++
++		/* First email address, so no need for "," */
++		if (smtp_arg->email_it == 0) {
++			snprintf(email_to_addrs, SMTP_EMAIL_ADDR_MAX_LENGTH, "%s", fetched_email);
++		}
++		else {
++			strcat(email_to_addrs, ", ");
++			strncat(email_to_addrs, fetched_email, SMTP_EMAIL_ADDR_MAX_LENGTH);
++		}
++	
++		smtp_arg->email_it++;
++		if (smtp_arg->email_it >= email_addrs_max)
++			break;
++				
++	}
++
++	smtp_arg->email_it = 0;
++}
++
+ /* BODY command processing.
+  * Do we need to use mutli-thread for multi-part body
+  * handling ? Don t really think :)
+@@ -453,7 +491,7 @@ body_cmd(thread_t * thread)
+ 	strftime(rfc822, sizeof(rfc822), "%a, %d %b %Y %H:%M:%S %z", gmtime(&tm));
+ 
+ 	snprintf(buffer, SMTP_BUFFER_MAX, SMTP_HEADERS_CMD,
+-		 rfc822, global_data->email_from, smtp_arg->subject);
++		 rfc822, global_data->email_from, smtp_arg->subject, smtp_arg->email_to);
+ 
+ 	/* send the subject field */
+ 	if (send(thread->u.fd, buffer, strlen(buffer), 0) == -1)
+@@ -548,6 +586,7 @@ smtp_alert(real_server * rs, vrrp_rt * vrrp,
+ 		smtp_arg->subject = (char *) MALLOC(MAX_HEADERS_LENGTH);
+ 		smtp_arg->body = (char *) MALLOC(MAX_BODY_LENGTH);
+ 		smtp_arg->buffer = (char *) MALLOC(SMTP_BUFFER_MAX);
++		smtp_arg->email_to = (char *) MALLOC(SMTP_BUFFER_MAX);
+ 
+ 		/* format subject if rserver is specified */
+ 		if (rs) {
+@@ -571,6 +610,7 @@ smtp_alert(real_server * rs, vrrp_rt * vrrp,
+ 				 subject);
+ 
+ 		strncpy(smtp_arg->body, body, MAX_BODY_LENGTH);
++		build_to_header_rcpt_addrs(smtp_arg);
+ 
+ 		smtp_connect(smtp_arg);
+ 	}
+diff --git a/keepalived/include/smtp.h b/keepalived/include/smtp.h
+index b7f848b..f43aec9 100644
+--- a/keepalived/include/smtp.h
++++ b/keepalived/include/smtp.h
+@@ -39,6 +39,7 @@
+ #define SMTP_BUFFER_LENGTH	512
+ #define SMTP_BUFFER_MAX		1024
+ #define SMTP_MAX_FSM_STATE	10
++#define SMTP_EMAIL_ADDR_MAX_LENGTH	64
+ 
+ /* SMTP command stage */
+ #define HELO	4
+@@ -75,6 +76,7 @@ typedef struct _smtp_thread_arg {
+ 	char *subject;
+ 	char *body;
+ 	char *buffer;
++	char *email_to;
+ 	long buflen;
+ } smtp_thread_arg;
+ 
+@@ -84,7 +86,7 @@ typedef struct _smtp_thread_arg {
+ #define SMTP_RCPT_CMD    "RCPT TO:<%s>\r\n"
+ #define SMTP_DATA_CMD    "DATA\r\n"
+ #define SMTP_HEADERS_CMD "Date: %s\r\nFrom: %s\r\nSubject: %s\r\n" \
+-			 "X-Mailer: Keepalived\r\n\r\n"
++			 "X-Mailer: Keepalived\r\nTo: %s\r\n\r\n"
+ #define SMTP_BODY_CMD    "%s\r\n"
+ #define SMTP_SEND_CMD    "\r\n.\r\n"
+ #define SMTP_QUIT_CMD    "QUIT\r\n"
+-- 
+1.8.1.4
+

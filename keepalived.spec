@@ -8,7 +8,7 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.7
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -27,6 +27,7 @@ Patch6: keepalived-1.2.7-fix-error-message.patch
 Patch7: keepalived-1.2.7-update-gpl-license.patch
 Patch9: keepalived-1.2.7-remove-debug-messages.patch
 Patch10: keepalived-1.2.7-fix-man-page-macro.patch
+Patch11: keepalived-1.2.7-add-to-header-for-smtp-alerts.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -69,6 +70,7 @@ infrastructures.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
+%patch11 -p1
 
 %build
 %configure \
@@ -123,6 +125,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Mon Aug 19 2013 Ryan O'Hara <rohara@redhat.com> - 1.2.7-10
+- Add To header for SMTP alerts (#967641)
+
 * Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.2.7-9
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
 
