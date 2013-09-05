@@ -1,5 +1,6 @@
 %bcond_without snmp
 %bcond_without vrrp
+%bcond_without sha1
 %bcond_with profile
 %bcond_with debug
 
@@ -7,27 +8,14 @@
 
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
-Version: 1.2.7
-Release: 10%{?dist}
+Version: 1.2.8
+Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
 
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
-
-Patch0: keepalived-1.2.7-dont-respawn-children.patch
-Patch1: keepalived-1.2.7-cleanup-duplicate-option-code.patch
-Patch2: keepalived-1.2.7-generate-usage-message-from-popt.patch
-Patch3: keepalived-1.2.7-update-keepalived-man-page.patch
-Patch4: keepalived-1.2.7-fix-pointer-arithmetic-vrrp-packet.patch
-Patch8: keepalived-1.2.7-fix-primary-ip-address-comparison.patch
-Patch5: keepalived-1.2.7-fix-ssl-certificate-load.patch
-Patch6: keepalived-1.2.7-fix-error-message.patch
-Patch7: keepalived-1.2.7-update-gpl-license.patch
-Patch9: keepalived-1.2.7-remove-debug-messages.patch
-Patch10: keepalived-1.2.7-fix-man-page-macro.patch
-Patch11: keepalived-1.2.7-add-to-header-for-smtp-alerts.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -59,25 +47,14 @@ infrastructures.
 
 %prep
 %setup -q
-%patch0 -p1
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
 
 %build
 %configure \
     %{?with_debug:--enable-debug} \
     %{?with_profile:--enable-profile} \
     %{!?with_vrrp:--disable-vrrp} \
-    %{?with_snmp:--enable-snmp}
+    %{?with_snmp:--enable-snmp} \
+    %{?with_sha1:--enable-sha1}
 %{__make} %{?_smp_mflags} STRIP=/bin/true
 
 %install
@@ -125,6 +102,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Thu Sep 05 2013 Ryan O'Hara <rohara@redhat.com> - 1.2.8-1
+- Update to 1.2.8.
+
 * Mon Aug 19 2013 Ryan O'Hara <rohara@redhat.com> - 1.2.7-10
 - Add To header for SMTP alerts (#967641)
 
