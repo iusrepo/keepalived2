@@ -1,0 +1,309 @@
+From 8db312d415bab144c9e5b6fd41ced3c020fcaa82 Mon Sep 17 00:00:00 2001
+From: Alexandre Cassen <acassen@gmail.com>
+Date: Tue, 7 Jan 2014 15:58:12 +0100
+Subject: [PATCH 5/7] lib: cosmetics at command.c
+
+Extend command framework to support logger and remove some dead code.
+some cosmetics too.
+---
+ lib/command.c | 86 +++++++++++++++++++++--------------------------------------
+ lib/command.h | 24 +++++------------
+ 2 files changed, 37 insertions(+), 73 deletions(-)
+
+diff --git a/lib/command.c b/lib/command.c
+index 4814594..04079b5 100644
+--- a/lib/command.c
++++ b/lib/command.c
+@@ -33,6 +33,7 @@
+ #include "vty.h"
+ #include "command.h"
+ #include "timer.h"
++#include "logger.h"
+ 
+ /* Command vector which includes some level of command lists. Normally
+  * each daemon maintains its own cmdvec. */
+@@ -310,8 +311,8 @@ cmd_make_descvec(const char *string, const char *descstr)
+ 
+ 		if (*cp == '|') {
+ 			if (!multiple) {
+-				fprintf (stderr, "Command parse error!: %s\n", string);
+-				exit (1);
++				log_message(LOG_ERR, "Command parse error!: %s\n", string);
++				exit(1);
+ 			}
+ 			cp++;
+ 		}
+@@ -407,9 +408,9 @@ install_element(node_type_t ntype, cmd_element_t *cmd)
+ 	cnode = vector_slot(cmdvec, ntype);
+ 
+ 	if (cnode == NULL) {
+-		fprintf (stderr, "Command node %d doesn't exist, please check it\n",
+-			 ntype);
+-		exit (1);
++		log_message(LOG_ERR, "Command node %d doesn't exist, please check it\n"
++				   , ntype);
++		exit(1);
+ 	}
+ 
+ 	vector_set(cnode->cmd_vector, cmd);
+@@ -417,7 +418,7 @@ install_element(node_type_t ntype, cmd_element_t *cmd)
+ 	if (cmd->strvec == NULL)
+ 		cmd->strvec = cmd_make_descvec(cmd->string, cmd->doc);
+ 
+-	cmd->cmdsize = cmd_cmdsize (cmd->strvec);
++	cmd->cmdsize = cmd_cmdsize(cmd->strvec);
+ }
+ 
+ static const unsigned char itoa64[] =
+@@ -489,9 +490,9 @@ config_write_host(vty_t *vty)
+ static vector_t *
+ cmd_node_vector(vector_t *v, node_type_t ntype)
+ {
+-  cmd_node_t *cnode = vector_slot(v, ntype);
++	cmd_node_t *cnode = vector_slot(v, ntype);
+ 
+-  return cnode->cmd_vector;
++	return cnode->cmd_vector;
+ }
+ 
+ /* Completion match types. */
+@@ -825,8 +826,8 @@ cmd_filter_by_completion(char *command, vector_t *v, unsigned int index)
+ 
+ 	/* If command and cmd_element string does not match set NULL to vector */
+ 	for (i = 0; i < vector_active (v); i++) {
+-		if ((cmd_element = vector_slot (v, i)) != NULL) {
+-			if (index >= vector_active (cmd_element->strvec)) {
++		if ((cmd_element = vector_slot(v, i)) != NULL) {
++			if (index >= vector_active(cmd_element->strvec)) {
+ 				vector_slot(v, i) = NULL;
+ 			} else {
+ 				unsigned int j;
+@@ -911,12 +912,12 @@ cmd_filter_by_string(char *command, vector_t *v, unsigned int index)
+ 	match_type = no_match;
+ 
+ 	/* If command and cmd_element string does not match set NULL to vector */
+-	for (i = 0; i < vector_active (v); i++) {
++	for (i = 0; i < vector_active(v); i++) {
+ 		if ((cmd_element = vector_slot (v, i)) != NULL) {
+ 			/* If given index is bigger than max string vector of command,
+ 			 * set NULL */
+-			if (index >= vector_active (cmd_element->strvec)) {
+-				vector_slot (v, i) = NULL;
++			if (index >= vector_active(cmd_element->strvec)) {
++				vector_slot(v, i) = NULL;
+ 			} else {
+ 				unsigned int j;
+ 				int matched = 0;
+@@ -1161,9 +1162,9 @@ cmd_unique_string(vector_t *v, const char *str)
+ 	unsigned int i;
+ 	char *match;
+ 
+-	for (i = 0; i < vector_active (v); i++) {
+-		if ((match = vector_slot (v, i)) != NULL) {
+-			if (strcmp (match, str) == 0) {
++	for (i = 0; i < vector_active(v); i++) {
++		if ((match = vector_slot(v, i)) != NULL) {
++			if (strcmp(match, str) == 0) {
+ 				return 0;
+ 			}
+ 		}
+@@ -1180,9 +1181,9 @@ desc_unique_string(vector_t *v, const char *str)
+ 	unsigned int i;
+ 	desc_t *desc;
+ 
+-	for (i = 0; i < vector_active (v); i++) {
+-		if ((desc = vector_slot (v, i)) != NULL) {
+-			if (strcmp (desc->cmd, str) == 0) {
++	for (i = 0; i < vector_active(v); i++) {
++		if ((desc = vector_slot(v, i)) != NULL) {
++			if (strcmp(desc->cmd, str) == 0) {
+ 				return 1;
+ 			}
+ 		}
+@@ -1418,7 +1419,7 @@ cmd_complete_command_real(vector_t *vline, vty_t *vty, int *status)
+ 			int ret;
+ 
+ 			/* First try completion match, if there is exactly match return 1 */
+-			match = cmd_filter_by_completion (command, cmd_vector, i);
++			match = cmd_filter_by_completion(command, cmd_vector, i);
+ 
+ 			/* If there is exact match then filter ambiguous match else check
+ 			 * ambiguousness. */
+@@ -1434,8 +1435,8 @@ cmd_complete_command_real(vector_t *vline, vty_t *vty, int *status)
+ 	matchvec = vector_init(INIT_MATCHVEC_SIZE);
+ 
+ 	/* Now we got into completion */
+-	for (i = 0; i < vector_active (cmd_vector); i++) {
+-		if ((cmd_element = vector_slot (cmd_vector, i))) {
++	for (i = 0; i < vector_active(cmd_vector); i++) {
++		if ((cmd_element = vector_slot(cmd_vector, i))) {
+ 			const char *string;
+ 			vector_t *strvec = cmd_element->strvec;
+ 
+@@ -1560,28 +1561,6 @@ cmd_complete_command(vector_t *vline, vty_t *vty, int *status)
+ node_type_t
+ node_parent(node_type_t node)
+ {
+-#if 0
+-	node_type_t ret;
+-
+-	assert(node > CONFIG_NODE);
+-
+-	switch (node) {
+-	case BGP_VPNV4_NODE:
+-	case BGP_IPV4_NODE:
+-	case BGP_IPV4M_NODE:
+-	case BGP_IPV6_NODE:
+-	case BGP_IPV6M_NODE:
+-		ret = BGP_NODE;
+-		break;
+-	case KEYCHAIN_KEY_NODE:
+-		ret = KEYCHAIN_NODE;
+-		break;
+-	default:
+-		ret = CONFIG_NODE;
+-	}
+-
+-	return ret;
+-#endif
+ 	return CONFIG_NODE;
+ }
+ 
+@@ -1628,8 +1607,8 @@ cmd_execute_command_real(vector_t *vline, vty_t *vty, cmd_element_t **cmd)
+ 	matched_count = 0;
+ 	incomplete_count = 0;
+ 
+-	for (i = 0; i < vector_active (cmd_vector); i++) {
+-		if ((cmd_element = vector_slot (cmd_vector, i))) {
++	for (i = 0; i < vector_active(cmd_vector); i++) {
++		if ((cmd_element = vector_slot(cmd_vector, i))) {
+ 			if (match == vararg_match || index >= cmd_element->cmdsize) {
+ 				matched_element = cmd_element;
+ 				matched_count++;
+@@ -1718,7 +1697,7 @@ cmd_execute_command(vector_t *vline, vty_t *vty, cmd_element_t **cmd, int vtysh)
+ 	}
+ 
+ 
+-	saved_ret = ret = cmd_execute_command_real (vline, vty, cmd);
++	saved_ret = ret = cmd_execute_command_real(vline, vty, cmd);
+ 
+ 	if (vtysh)
+ 		return saved_ret;
+@@ -1957,10 +1936,10 @@ DEFUN(config_exit,
+ }
+ 
+ /* quit is alias of exit. */
+-ALIAS (config_exit,
+-       config_quit_cmd,
+-       "quit",
+-       "Exit current mode and down to previous mode\n")
++ALIAS(config_exit,
++      config_quit_cmd,
++      "quit",
++      "Exit current mode and down to previous mode\n")
+        
+ /* End of configuration. */
+ DEFUN(config_end,
+@@ -2038,7 +2017,7 @@ DEFUN(config_list,
+ 
+ 	for (i = 0; i < vector_active (cnode->cmd_vector); i++)
+ 		if ((cmd = vector_slot (cnode->cmd_vector, i)) != NULL &&
+-		    !(cmd->attr == CMD_ATTR_DEPRECATED || cmd->attr == CMD_ATTR_HIDDEN))
++		    cmd->attr != CMD_ATTR_HIDDEN)
+ 			vty_out(vty, "  %s%s", cmd->string, VTY_NEWLINE);
+ 
+ 	return CMD_SUCCESS;
+@@ -2612,7 +2591,6 @@ cmd_init(void)
+ 	install_element(VIEW_NODE, &config_terminal_no_length_cmd);
+ 	install_element(VIEW_NODE, &echo_cmd);
+ 
+-//	install_element(ENABLE_NODE, &config_exit_cmd);
+ 	install_default(ENABLE_NODE);
+ 	install_element(ENABLE_NODE, &config_disable_cmd);
+ 	install_element(ENABLE_NODE, &config_terminal_cmd);
+@@ -2626,8 +2604,6 @@ cmd_init(void)
+ 	install_element(ENABLE_NODE, &echo_cmd);
+ 
+ 	install_default(CONFIG_NODE);
+-//	install_element(CONFIG_NODE, &config_exit_cmd);
+-
+   
+ 	install_element(CONFIG_NODE, &hostname_cmd);
+ 	install_element(CONFIG_NODE, &no_hostname_cmd);
+diff --git a/lib/command.h b/lib/command.h
+index 34091a9..71191a1 100644
+--- a/lib/command.h
++++ b/lib/command.h
+@@ -64,6 +64,7 @@ typedef enum _node_type {
+ 
+ 	VTY_NODE,					/* Vty node. */
+ 
++	GLOBAL_NODE,					/* Global daemon commands. */
+ 	CHECK_NODE,					/* Checker framework commands. */
+ 	VRRP_NODE,					/* VRRP framework commands. */
+ } node_type_t;
+@@ -118,8 +119,7 @@ typedef struct _desc {
+  */
+ 
+ enum {
+-	CMD_ATTR_DEPRECATED = 1,
+-	CMD_ATTR_HIDDEN,
++	CMD_ATTR_HIDDEN = 1,
+ };
+ 
+ #define CMD_SUCCESS		0
+@@ -187,9 +187,6 @@ enum {
+ #define DEFUN_HIDDEN(funcname, cmdname, cmdstr, helpstr)			\
+ 	DEFUN_ATTR (funcname, cmdname, cmdstr, helpstr, CMD_ATTR_HIDDEN)
+ 
+-#define DEFUN_DEPRECATED(funcname, cmdname, cmdstr, helpstr)			\
+-	DEFUN_ATTR (funcname, cmdname, cmdstr, helpstr, CMD_ATTR_DEPRECATED)
+-
+ /* DEFUN_NOSH for commands that vtysh should ignore */
+ #define DEFUN_NOSH(funcname, cmdname, cmdstr, helpstr)				\
+ 	DEFUN(funcname, cmdname, cmdstr, helpstr)
+@@ -213,9 +210,6 @@ enum {
+ #define DEFUNSH_HIDDEN(daemon, funcname, cmdname, cmdstr, helpstr)		\
+ 	DEFUNSH_ATTR (daemon, funcname, cmdname, cmdstr, helpstr, CMD_ATTR_HIDDEN)
+ 
+-#define DEFUNSH_DEPRECATED(daemon, funcname, cmdname, cmdstr, helpstr)		\
+-	DEFUNSH_ATTR (daemon, funcname, cmdname, cmdstr, helpstr, CMD_ATTR_DEPRECATED)
+-
+ /* ALIAS macro which define existing command's alias. */
+ #define ALIAS(funcname, cmdname, cmdstr, helpstr)				\
+ 	DEFUN_CMD_ELEMENT(funcname, cmdname, cmdstr, helpstr, 0, 0)
+@@ -226,27 +220,21 @@ enum {
+ #define ALIAS_HIDDEN(funcname, cmdname, cmdstr, helpstr)			\
+ 	DEFUN_CMD_ELEMENT(funcname, cmdname, cmdstr, helpstr, CMD_ATTR_HIDDEN, 0)
+ 
+-#define ALIAS_DEPRECATED(funcname, cmdname, cmdstr, helpstr)			\
+-	DEFUN_CMD_ELEMENT(funcname, cmdname, cmdstr, helpstr, CMD_ATTR_DEPRECATED, 0)
+-
+ #define ALIAS_SH(daemon, funcname, cmdname, cmdstr, helpstr)			\
+ 	DEFUN_CMD_ELEMENT(funcname, cmdname, cmdstr, helpstr, 0, daemon)
+ 
+ #define ALIAS_SH_HIDDEN(daemon, funcname, cmdname, cmdstr, helpstr)		\
+ 	DEFUN_CMD_ELEMENT(funcname, cmdname, cmdstr, helpstr, CMD_ATTR_HIDDEN, daemon)
+ 
+-#define ALIAS_SH_DEPRECATED(daemon, funcname, cmdname, cmdstr, helpstr)		\
+-	DEFUN_CMD_ELEMENT(funcname, cmdname, cmdstr, helpstr, CMD_ATTR_DEPRECATED, daemon)
+-
+ #define CMD_OPTION(S)	((S[0]) == '[')
+ #define CMD_VARIABLE(S)	(((S[0]) >= 'A' && (S[0]) <= 'Z') || ((S[0]) == '<'))
+ #define CMD_VARARG(S)	((S[0]) == '.')
+ #define CMD_RANGE(S)	((S[0] == '<'))
+ 
+-#define CMD_IPV4(S)		((strcmp ((S), "A.B.C.D") == 0))
+-#define CMD_IPV4_PREFIX(S)	((strcmp ((S), "A.B.C.D/M") == 0))
+-#define CMD_IPV6(S)		((strcmp ((S), "X:X::X:X") == 0))
+-#define CMD_IPV6_PREFIX(S)	((strcmp ((S), "X:X::X:X/M") == 0))
++#define CMD_IPV4(S)		((strcmp((S), "A.B.C.D") == 0))
++#define CMD_IPV4_PREFIX(S)	((strcmp((S), "A.B.C.D/M") == 0))
++#define CMD_IPV6(S)		((strcmp((S), "X:X::X:X") == 0))
++#define CMD_IPV6_PREFIX(S)	((strcmp((S), "X:X::X:X/M") == 0))
+ 
+ /* Common descriptions. */
+ #define SHOW_STR "Show running system information\n"
+-- 
+1.8.1.4
+
