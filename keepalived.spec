@@ -8,7 +8,7 @@
 
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
-Version: 1.2.10
+Version: 1.2.11
 Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
@@ -16,14 +16,6 @@ Group: System Environment/Daemons
 
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
-
-Patch1: 0001-ipvs-make-nlerr2syserr-libnl-dependent.patch
-Patch2: 0002-fix-libnl-libnl-3-logic-in-configure-script.patch
-Patch3: 0003-libipvs-libnl-3-include-fix.patch
-Patch4: 0004-lib-extend-command-lib-string-parser.patch
-Patch5: 0005-lib-cosmetics-at-command.c.patch
-Patch6: 0006-lib-extend-vty-to-support-logger.patch
-Patch7: 0007-autoconf-better-libnl3-detection.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -55,13 +47,6 @@ infrastructures.
 
 %prep
 %setup -q
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
 
 %build
 %configure \
@@ -117,8 +102,11 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Mon Feb 03 2014 Ryan O'Hara <rohara@redhat.com> - 1.2.11-1
+- Update to 1.2.11
+
 * Mon Jan 13 2014 Ryan O'Hara <rohara@redhat.com> - 1.2.10-1
-- Update to 1.2.10.
+- Update to 1.2.10
 
 * Mon Nov 11 2013 Ryan O'Hara <rohara@redhat.com> - 1.2.9-1
 - Update to 1.2.9.
