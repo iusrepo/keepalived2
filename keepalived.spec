@@ -8,7 +8,7 @@
 
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
-Version: 1.2.12
+Version: 1.2.13
 Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
@@ -84,24 +84,27 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %attr(0755,root,root) %{_sbindir}/keepalived
-%attr(0644,root,root) %{_sysconfdir}/sysconfig/keepalived
-%attr(0644,root,root) %{_sysconfdir}/keepalived/keepalived.conf
+%config(noreplace) %attr(0644,root,root) %{_sysconfdir}/sysconfig/keepalived
+%config(noreplace) %attr(0644,root,root) %{_sysconfdir}/keepalived/keepalived.conf
 %doc AUTHOR ChangeLog CONTRIBUTORS COPYING README TODO
 %doc doc/keepalived.conf.SYNOPSIS doc/samples/keepalived.conf.*
 %dir %{_sysconfdir}/keepalived/
-%config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
-%config(noreplace) %{_sysconfdir}/sysconfig/keepalived
+#%config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
+#%config(noreplace) %{_sysconfdir}/sysconfig/keepalived
 %if %{with snmp}
 %{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
 %endif
 %{_bindir}/genhash
 %{_unitdir}/keepalived.service
-%{_sbindir}/keepalived
+#%{_sbindir}/keepalived
 %{_mandir}/man1/genhash.1*
 %{_mandir}/man5/keepalived.conf.5*
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Tue May 13 2014 Ryan O'Hara <rohara@redhat.com> - 1.2.13-1
+- Update to 1.2.13
+
 * Mon Feb 10 2014 Ryan O'Hara <rohara@redhat.com> - 1.2.12-1
 - Update to 1.2.12
 
@@ -188,7 +191,7 @@ rm -rf %{buildroot}
 - convert to systemd
 - fix ip_vs.h path searching in configure
 
-* Tue Jul 23 2011 Matthias Saou <http://freshrpms.net/> 1.2.2-2
+* Tue Jul 12 2011 Matthias Saou <http://freshrpms.net/> 1.2.2-2
 - Build against libnl for Fedora. RHEL's libnl is too old.
 
 * Sat May 21 2011 Matthias Saou <http://freshrpms.net/> 1.2.2-1
