@@ -89,14 +89,11 @@ rm -rf %{buildroot}
 %doc AUTHOR ChangeLog CONTRIBUTORS COPYING README TODO
 %doc doc/keepalived.conf.SYNOPSIS doc/samples/keepalived.conf.*
 %dir %{_sysconfdir}/keepalived/
-#%config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
-#%config(noreplace) %{_sysconfdir}/sysconfig/keepalived
 %if %{with snmp}
 %{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
 %endif
 %{_bindir}/genhash
 %{_unitdir}/keepalived.service
-#%{_sbindir}/keepalived
 %{_mandir}/man1/genhash.1*
 %{_mandir}/man5/keepalived.conf.5*
 %{_mandir}/man8/keepalived.8*
