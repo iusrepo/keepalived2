@@ -8,14 +8,16 @@
 
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
-Version: 1.2.13
-Release: 4%{?dist}
+Version: 1.2.14
+Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
 
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
+
+Patch1: 0001-Fix-format-of-long-int.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -47,6 +49,7 @@ infrastructures.
 
 %prep
 %setup -q
+%patch1 -p1
 
 %build
 %configure \
@@ -101,6 +104,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Tue Dec 16 2014 Ryan O'Hara <rohara@redhat.com> - 1.2.14-1
+- Update to 1.2.14
+
 * Tue Oct 28 2014 Ryan O'Hara <rohara@redhat.com> - 1.2.13-4
 - Create /usr/libexec/keepalived directory (#1158113)
 
