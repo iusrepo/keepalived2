@@ -9,7 +9,7 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.15
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -101,6 +101,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Tue Jan 13 2015 Ryan O'Hara <rohara@redhat.com> - 1.2.15-2
+- Depend on network-online.target systemd unit (#1181097)
+
 * Tue Dec 23 2014 Ryan O'Hara <rohara@redhat.com> - 1.2.15-1
 - Update to 1.2.15
 
