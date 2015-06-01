@@ -9,7 +9,7 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.17
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -67,7 +67,10 @@ mkdir -p %{buildroot}%{_libexecdir}/keepalived
 
 %if %{with snmp}
 mkdir -p %{buildroot}%{_datadir}/snmp/mibs/
-%{__install} -p -D -m 0644 doc/KEEPALIVED-MIB %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
+%{__mv} %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB \
+    %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
+%{__mv} %{buildroot}%{_datadir}/snmp/mibs/VRRP-MIB \
+    %{buildroot}%{_datadir}/snmp/mibs/VRRP-MIB.txt
 %endif
 
 %clean
@@ -92,8 +95,8 @@ rm -rf %{buildroot}
 %dir %{_sysconfdir}/keepalived/
 %dir %{_libexecdir}/keepalived/
 %if %{with snmp}
-%{_datadir}/snmp/mibs/KEEPALIVED-MIB
-%{_datadir}/snmp/mibs/VRRP-MIB
+%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
+%{_datadir}/snmp/mibs/VRRP-MIB.txt
 %endif
 %{_bindir}/genhash
 %{_unitdir}/keepalived.service
@@ -102,6 +105,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Mon Jun 01 2015 Ryan O'Hara <rohara@redhat.com> - 1.2.17-2
+- Add VRRP MIB file
+
 * Mon Jun 01 2015 Ryan O'Hara <rohara@redhat.com> - 1.2.17-1
 - Update to 1.2.17
 
