@@ -92,7 +92,8 @@ rm -rf %{buildroot}
 %dir %{_sysconfdir}/keepalived/
 %dir %{_libexecdir}/keepalived/
 %if %{with snmp}
-%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
+%{_datadir}/snmp/mibs/KEEPALIVED-MIB
+%{_datadir}/snmp/mibs/VRRP-MIB
 %endif
 %{_bindir}/genhash
 %{_unitdir}/keepalived.service
@@ -101,7 +102,7 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
-* Mon Jun 01 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.17-1
+* Mon Jun 01 2015 Ryan O'Hara <rohara@redhat.com> - 1.2.17-1
 - Update to 1.2.17
 
 * Wed Apr 01 2015 Ryan O'Hara <rohara@redhat.com> - 1.2.16-1
