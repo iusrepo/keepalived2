@@ -9,13 +9,15 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.17
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
 
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
+
+Patch0: bz1232408-fix-multiple-vrrp-instance-configs.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -47,6 +49,7 @@ infrastructures.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 %configure \
@@ -105,6 +108,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Wed Jun 17 2015 Ryan O'Hara <rohara@redhat.com> - 1.2.17-4
+- Fix multiple VRRP instances with same interface (#1232408)
+
 * Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.2.17-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
 

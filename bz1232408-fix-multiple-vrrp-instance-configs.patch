@@ -1,0 +1,92 @@
+From 65b3126b7e7fe2ad40f830240e94cf9a1f772409 Mon Sep 17 00:00:00 2001
+From: Ryan O'Hara <rohara@redhat.com>
+Date: Wed, 17 Jun 2015 13:05:19 -0500
+Subject: [PATCH] Revert "Fix VRRP preemption taking too long"
+
+This reverts commit 76f9ce36ae389983b48a83a933182739786908c9.
+---
+ keepalived/vrrp/vrrp_scheduler.c | 15 ---------------
+ keepalived/vrrp/vrrp_sync.c      | 31 ++++++-------------------------
+ 2 files changed, 6 insertions(+), 40 deletions(-)
+
+diff --git a/keepalived/vrrp/vrrp_scheduler.c b/keepalived/vrrp/vrrp_scheduler.c
+index b87a93c..685a2bc 100644
+--- a/keepalived/vrrp/vrrp_scheduler.c
++++ b/keepalived/vrrp/vrrp_scheduler.c
+@@ -629,14 +629,6 @@ vrrp_leave_master(vrrp_t * vrrp, char *buffer, int len)
+ 	} else if (vrrp_state_master_rx(vrrp, buffer, len)) {
+ 		vrrp_state_leave_master(vrrp);
+ 		vrrp_smtp_notifier(vrrp);
+-	} else {
+-		/*
+-		 * If we're up, and the packet we received is preemptible
+-		 * assert that we are the correct MASTER and immediately
+-		 * transmit an advertisement to quell the operation of the
+-		 * erroneous, lower-priority MASTER
+-		 */
+-		vrrp_master(vrrp);
+ 	}
+ }
+ 
+@@ -726,13 +718,6 @@ vrrp_goto_master(vrrp_t * vrrp)
+ 		/* handle master state transition */
+ 		vrrp->wantstate = VRRP_STATE_MAST;
+ 		vrrp_state_goto_master(vrrp);
+-
+-		/*
+-		 * Immediately send a VRRP advertisement to the multicast
+-		 * address to assert that we are now operating as the session
+-		 * MASTER
+-		 */
+-		vrrp_master(vrrp);
+ 	}
+ }
+ 
+diff --git a/keepalived/vrrp/vrrp_sync.c b/keepalived/vrrp/vrrp_sync.c
+index 3431e03..ee35b0b 100644
+--- a/keepalived/vrrp/vrrp_sync.c
++++ b/keepalived/vrrp/vrrp_sync.c
+@@ -36,34 +36,15 @@ vrrp_init_instance_sands(vrrp_t * vrrp)
+ {
+ 	set_time_now();
+ 
+-	/*
+-	 * When in MASTER state the expiry time for the group controls when
+-	 * advertisements are transmitted.
+-	 * As such, sets the expiry to one advertisement interval from now
+-	 */
+-	if (vrrp->state == VRRP_STATE_MAST) {
+-		vrrp->sands = timer_add_long(time_now, vrrp->adver_int);
++	if (vrrp->state == VRRP_STATE_MAST	  ||
++	    vrrp->state == VRRP_STATE_GOTO_MASTER ||
++	    vrrp->state == VRRP_STATE_GOTO_FAULT  ||
++	    vrrp->wantstate == VRRP_STATE_GOTO_MASTER) {
++		vrrp->sands.tv_sec = time_now.tv_sec + vrrp->adver_int / TIMER_HZ;
++ 		vrrp->sands.tv_usec = time_now.tv_usec;
+ 		return;
+ 	}
+ 
+-	/*
+-	 * When not in MASTER state, but transitioning to MASTER state (e.g.
+-	 * wantstate is GOTO_MASTER, which occurs when a preemptable packet is
+-	 * received), the timer should not be updated to allow the Master Down
+-	 * Timer to expire.
+-	 */
+-	if (vrrp->state == VRRP_STATE_GOTO_MASTER ||
+-		vrrp->state == VRRP_STATE_GOTO_FAULT  ||
+-		vrrp->wantstate == VRRP_STATE_GOTO_MASTER) {
+-		return;
+-	}
+-
+-	/*
+-	 * When in the BACKUP state the expiry timer should be updated to
+-	 * time_now plus the Master Down Timer, when a non-preemptable packet is
+-	 * received. (When a preemptable packet is received, the wantstate is
+-	 * moved to GOTO_MASTER and this condition is caught above).
+-	 */
+ 	if (vrrp->state == VRRP_STATE_BACK || vrrp->state == VRRP_STATE_FAULT)
+ 		vrrp->sands = timer_add_long(time_now, vrrp->ms_down_timer);
+ }
+-- 
+1.9.3
+
