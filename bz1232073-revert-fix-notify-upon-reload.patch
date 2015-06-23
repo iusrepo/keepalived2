@@ -1,0 +1,202 @@
+From bde088a433219ff8f966f53f1a4cb5a504f24fd5 Mon Sep 17 00:00:00 2001
+From: Ryan O'Hara <rohara@redhat.com>
+Date: Wed, 17 Jun 2015 20:58:31 -0500
+Subject: [PATCH 1/2] Revert "Fix notify upon reload"
+
+This reverts commit 89f910217097c1201ff15922a52facc668aa4ab4.
+---
+ keepalived/include/vrrp.h        |  8 -----
+ keepalived/include/vrrp_notify.h |  1 -
+ keepalived/vrrp/vrrp.c           |  9 -----
+ keepalived/vrrp/vrrp_data.c      |  8 ++---
+ keepalived/vrrp/vrrp_notify.c    | 71 ----------------------------------------
+ keepalived/vrrp/vrrp_scheduler.c |  3 +-
+ 6 files changed, 5 insertions(+), 95 deletions(-)
+
+diff --git a/keepalived/include/vrrp.h b/keepalived/include/vrrp.h
+index 12f44e1..8c8b3f3 100644
+--- a/keepalived/include/vrrp.h
++++ b/keepalived/include/vrrp.h
+@@ -230,14 +230,6 @@ typedef struct _vrrp_t {
+ 	/* IPSEC AH counter def (only valid for VRRPv2) --rfc2402.3.3.2 */
+ 	seq_counter_t		*ipsecah_counter;
+ 	list			script;
+-	list			pscript[2]; /*
+-								* previous scripts:
+-								* [0] contains pointer to list of scripts
+-								* configured before reload.
+-								* [1] contains pointer to list of scripts
+-								* configured two reloads ago. The list
+-								* pointed to here gets freed during reload.
+-								*/
+ } vrrp_t;
+ 
+ /* VRRP state machine -- rfc2338.6.4 */
+diff --git a/keepalived/include/vrrp_notify.h b/keepalived/include/vrrp_notify.h
+index fa0770f..692f10f 100644
+--- a/keepalived/include/vrrp_notify.h
++++ b/keepalived/include/vrrp_notify.h
+@@ -28,7 +28,6 @@
+ #include "vrrp.h"
+ 
+ extern int notify_instance_exec(vrrp_t *, int);
+-extern int notify_instance_exec_init(vrrp_t *, int);
+ extern int notify_group_exec(vrrp_sgroup_t *, int);
+ extern void alloc_notify_script(list, vector_t *);
+ extern void dump_notify_script(void *);
+diff --git a/keepalived/vrrp/vrrp.c b/keepalived/vrrp/vrrp.c
+index 8020302..e0715be 100644
+--- a/keepalived/vrrp/vrrp.c
++++ b/keepalived/vrrp/vrrp.c
+@@ -1758,14 +1758,6 @@ clear_diff_vrrp(void)
+ 				netlink_link_del_vmac(vrrp);
+ 			}
+ 
+-			/* Obtain reference to list of scripts used before reload
+-			 * to enable a comparison later on to avoid making redundant
+-			 * notifications.
+-			 */
+-			new_vrrp->pscript[1] = vrrp->pscript[0];
+-			new_vrrp->pscript[0] = vrrp->script;
+-			vrrp->script = NULL;
+-
+ 			/* reset the state */
+ 			reset_vrrp_state(vrrp);
+ 		}
+@@ -1795,4 +1787,3 @@ clear_diff_script(void)
+ 		}
+ 	}
+ }
+-
+diff --git a/keepalived/vrrp/vrrp_data.c b/keepalived/vrrp/vrrp_data.c
+index 78d3fdb..42d7af0 100644
+--- a/keepalived/vrrp/vrrp_data.c
++++ b/keepalived/vrrp/vrrp_data.c
+@@ -213,10 +213,10 @@ free_vrrp(void *data)
+ 			FREE(ELEMENT_DATA(e));
+ 	free_list(vrrp->track_script);
+ 
+-	if (!LIST_ISEMPTY(vrrp->pscript[1]))
+-		for (e = LIST_HEAD(vrrp->pscript[1]); e; ELEMENT_NEXT(e))
+-			FREE(ELEMENT_DATA(e));
+-	free_list(vrrp->pscript[1]);
++    if (!LIST_ISEMPTY(vrrp->script))
++        for (e = LIST_HEAD(vrrp->script); e; ELEMENT_NEXT(e))
++            FREE(ELEMENT_DATA(e));
++    free_list(vrrp->script);
+ 
+ 	free_list(vrrp->unicast_peer);
+ 	free_list(vrrp->vip);
+diff --git a/keepalived/vrrp/vrrp_notify.c b/keepalived/vrrp/vrrp_notify.c
+index 935f726..f830341 100644
+--- a/keepalived/vrrp/vrrp_notify.c
++++ b/keepalived/vrrp/vrrp_notify.c
+@@ -22,7 +22,6 @@
+ 
+ /* system include */
+ #include <ctype.h>
+-#include <stdbool.h>
+ 
+ /* local include */
+ #include "vrrp_notify.h"
+@@ -160,76 +159,6 @@ notify_script_exec(char* script, char *type, int state_num, char* name, int prio
+ 	return 1;
+ }
+ 
+-/* This function acts as a proxy, temporarily changing each VRRP's notify
+- * list. It should be called when we are in the init state. We get to this
+- * stage if our daemon has just been initialized, or if we perform a reload
+- * on the daemon. In the latter situation, this causes us to leave and then
+- * re-enter the state we just left. We do not want to notify when we go
+- * from, for example, master->master.
+- *
+- * This function prevents the above from happening by comparing our current
+- * configured notify script list with the previous scripts we had configured.
+- * We create a new list that contains scripts that are in our current
+- * configuration AND were not in our configuration before reload.
+- * We then update our vrrp instance to point to this list temporarily before
+- * calling notify_instance_exec(...). After this call has returned, we then
+- * update our vrrp reference to point back to the original, currently configured
+- * list.
+- */
+-int
+-notify_instance_exec_init(vrrp_t * vrrp, int state)
+-{
+-	bool match = false;
+-	char *cur_script, *prev_script;
+-	element e_cur, e_prev = NULL;
+-	int ret;
+-	list l_temp = alloc_list(NULL, dump_notify_script);
+-	list l_orig = vrrp->script;
+-	notify_sc_t *nsc_cur, *nsc_prev = NULL;
+-
+-	/* The algorithm here is essentially:
+-	 * for each element in our currently configured list
+-	 * 		if this element did not exist in our previous configuration
+-	 * 			add this element to our temporary list
+-	 *
+-	 * NOTE: this loop can be optimised if scripts are stored in an
+-	 * alphabetical order. The inner loop can be exited early if
+-	 * strcmp returns > 0.
+-	 */
+-	if (!LIST_ISEMPTY(vrrp->script) && !LIST_ISEMPTY(vrrp->pscript[0])) {
+-		for (e_cur = LIST_HEAD(vrrp->script); e_cur; ELEMENT_NEXT(e_cur)) {
+-			nsc_cur = e_cur->data;
+-			cur_script = nsc_cur->sname;
+-			for (e_prev = LIST_HEAD(vrrp->pscript[0]); e_prev; ELEMENT_NEXT(e_prev)) {
+-				nsc_prev = e_prev->data;
+-				prev_script = nsc_prev->sname;
+-				if (strcmp(cur_script, prev_script) == 0) {
+-					match = true;
+-					break;
+-				}
+-			}
+-			if (match == false)
+-				list_add(l_temp, nsc_cur);
+-			match = false;
+-		}
+-		/* Change our reference to temp list. This means the call to
+-		 * notify_instance_exec(...) will only invoke the scripts that we
+-		 * have not previously been configured with.
+-		 */
+-		vrrp->script = l_temp;
+-	}
+-	ret = notify_instance_exec(vrrp, state);
+-
+-	/* Reset our reference back to our original list containing all our
+-	 * configured scripts. This means subsequent state changes will cause
+-	 * all of our configured scripts to be executed
+-	 */
+-	vrrp->script = l_orig;
+-
+-	free_list(l_temp);
+-	return ret;
+-}
+-
+ int
+ notify_instance_exec(vrrp_t * vrrp, int state)
+ {
+diff --git a/keepalived/vrrp/vrrp_scheduler.c b/keepalived/vrrp/vrrp_scheduler.c
+index b87a93c..7f31032 100644
+--- a/keepalived/vrrp/vrrp_scheduler.c
++++ b/keepalived/vrrp/vrrp_scheduler.c
+@@ -240,7 +240,6 @@ vrrp_init_state(list l)
+ 					       vrrp->vrid);
+ #endif
+ 			vrrp->state = VRRP_STATE_GOTO_MASTER;
+-			notify_instance_exec_init(vrrp, VRRP_STATE_MAST);
+ 		} else {
+ 			vrrp->ms_down_timer = 3 * vrrp->adver_int
+ 			    + VRRP_TIMER_SKEW(vrrp);
+@@ -258,7 +257,7 @@ vrrp_init_state(list l)
+ 			vrrp_restore_interface(vrrp, 0);
+ 			vrrp->state = VRRP_STATE_BACK;
+ 			vrrp_smtp_notifier(vrrp);
+-			notify_instance_exec_init(vrrp, VRRP_STATE_BACK);
++			notify_instance_exec(vrrp, VRRP_STATE_BACK);
+ #ifdef _WITH_SNMP_
+ 			vrrp_snmp_instance_trap(vrrp);
+ #endif
+-- 
+1.9.3
+

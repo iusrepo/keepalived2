@@ -9,7 +9,7 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.17
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -18,6 +18,8 @@ Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
 
 Patch0: bz1232408-fix-multiple-vrrp-instance-configs.patch
+Patch1: bz1232073-revert-fix-notify-upon-reload.patch
+Patch2: bz1232073-revert-multiple-notify-scripts.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -50,6 +52,8 @@ infrastructures.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
+%patch2 -p1
 
 %build
 %configure \
@@ -108,6 +112,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Tue Jun 23 2015 Ryan O'Hara <rohara@redhat.com> - 1.2.17-5
+- Revert patch that changed VRRP notify scripts to list (#1232073)
+
 * Wed Jun 17 2015 Ryan O'Hara <rohara@redhat.com> - 1.2.17-4
 - Fix multiple VRRP instances with same interface (#1232408)
 
