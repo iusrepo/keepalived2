@@ -9,7 +9,7 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.19
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -105,6 +105,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Sat Jan 23 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.19-3
+- Add PIDFile to systemd unit file (#1280437)
+
 * Wed Jul 29 2015 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 1.2.19-2
 - Rebuilt for rpm 4.12.90
 
