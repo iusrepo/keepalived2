@@ -9,7 +9,7 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.19
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -105,6 +105,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 1.2.19-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
 * Sat Jan 23 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.19-3
 - Add PIDFile to systemd unit file (#1280437)
 
