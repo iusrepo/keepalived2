@@ -9,13 +9,15 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.20
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
 
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
+
+Patch0: install-vrrp-mib.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -49,13 +51,14 @@ infrastructures.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 %configure \
     %{?with_debug:--enable-debug} \
     %{?with_profile:--enable-profile} \
     %{!?with_vrrp:--disable-vrrp} \
-    %{?with_snmp:--enable-snmp} \
+    %{?with_snmp:--enable-snmp --enable-snmp-rfc} \
     %{?with_sha1:--enable-sha1}
 %{__make} %{?_smp_mflags} STRIP=/bin/true
 
@@ -73,6 +76,8 @@ mkdir -p %{buildroot}%{_datadir}/snmp/mibs/
     %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
 %{__mv} %{buildroot}%{_datadir}/snmp/mibs/VRRP-MIB \
     %{buildroot}%{_datadir}/snmp/mibs/VRRP-MIB.txt
+    %{__mv} %{buildroot}%{_datadir}/snmp/mibs/VRRPv3-MIB \
+    %{buildroot}%{_datadir}/snmp/mibs/VRRPv3-MIB.txt
 %endif
 
 %clean
@@ -99,6 +104,7 @@ rm -rf %{buildroot}
 %if %{with snmp}
 %{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
 %{_datadir}/snmp/mibs/VRRP-MIB.txt
+%{_datadir}/snmp/mibs/VRRPv3-MIB.txt
 %endif
 %{_bindir}/genhash
 %{_unitdir}/keepalived.service
@@ -107,6 +113,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Sun Apr 10 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.20-2
+- Install VRRP MIB
+
 * Mon Apr 04 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.20-1
 - Update to 1.2.20 (#1323526)
 

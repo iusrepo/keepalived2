@@ -1,0 +1,35 @@
+From 15105f7a4d8c6661326e3e70b6bdc27b36e88cd7 Mon Sep 17 00:00:00 2001
+From: Ryan O'Hara <rohara@redhat.com>
+Date: Tue, 5 Apr 2016 08:50:33 -0500
+Subject: [PATCH] Install VRRP-MIB when applicable
+
+It appears that the condition in Makefile.in for installing VRRP-MIB
+was using a non-existent macro, SNMP_RFC2_SUPPORT. This patch removes
+two conditions from Makefile.in that use undefined macros and adds a
+condition to install VRRP-MIB when SNMP_RFCV2_SUPPORT is set
+appropriately.
+---
+ Makefile.in | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/Makefile.in b/Makefile.in
+index e77f046..fa88656 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -85,12 +85,9 @@ install:
+ 	$(MAKE) -C genhash install
+ ifeq (@SNMP_SUPPORT@, _WITH_SNMP_)
+ 	mkdir -p $(DESTDIR)/usr/share/snmp/mibs/
+-ifeq (@SNMP_RFC2_SUPPORT@, _WITH_SNMP_RFC2_)
++ifeq (@SNMP_RFCV2_SUPPORT@, _WITH_SNMP_RFCV2_)
+ 	cp -f doc/VRRP-MIB $(DESTDIR)/usr/share/snmp/mibs/
+ endif
+-ifeq (@SNMP_RFC3_SUPPORT@, _WITH_SNMP_RFC3_)
+-	cp -f doc/VRRPv3-MIB $(DESTDIR)/usr/share/snmp/mibs/
+-endif
+ ifeq (@SNMP_RFCV3_SUPPORT@, _WITH_SNMP_RFCV3_)
+ 	cp -f doc/VRRPv3-MIB $(DESTDIR)/usr/share/snmp/mibs/
+ endif
+-- 
+2.4.3
+
