@@ -9,7 +9,7 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.21
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -28,8 +28,6 @@ BuildRequires: net-snmp-devel
 BuildRequires: systemd-units
 BuildRequires: openssl-devel
 BuildRequires: libnl3-devel
-BuildRequires: kernel-devel
-BuildRequires: popt-devel
 BuildRequires: ipset-devel
 BuildRequires: libnfnetlink-devel
 
@@ -110,6 +108,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Fri Jun 03 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.21-2
+- Remove unnecessary BuildRequires (#1327873)
+
 * Fri Jun 03 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.21-1
 - Update to 1.2.21 (#1341372)
 
