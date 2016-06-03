@@ -8,16 +8,14 @@
 
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
-Version: 1.2.20
-Release: 2%{?dist}
+Version: 1.2.21
+Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
 
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
-
-Patch0: install-vrrp-mib.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -51,7 +49,6 @@ infrastructures.
 
 %prep
 %setup -q
-%patch0 -p1
 
 %build
 %configure \
@@ -113,6 +110,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Fri Jun 03 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.21-1
+- Update to 1.2.21 (#1341372)
+
 * Sun Apr 10 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.20-2
 - Install VRRP MIB
 
