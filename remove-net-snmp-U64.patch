@@ -1,0 +1,73 @@
+From 9c0427947283c0e67aaa107064546105cc32c5b2 Mon Sep 17 00:00:00 2001
+From: Quentin Armitage <quentin@armitage.org.uk>
+Date: Tue, 7 Jun 2016 08:09:27 +0100
+Subject: [PATCH] Enable compilation with development net-snmp headers
+
+net-snmp commit https://sourceforge.net/p/net-snmp/code/ci/477b4307ef12ddce3b6a9205e0bdddbfb2e0e9b6/
+removed the typedef U64 that was being used in check_snmp.c. This commit
+replaces U64 with the underlying type struct counter64.
+
+This commit should resolve issue #350.
+
+Signed-off-by: Quentin Armitage <quentin@armitage.org.uk>
+---
+ keepalived/check/check_snmp.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/keepalived/check/check_snmp.c b/keepalived/check/check_snmp.c
+index 1351eee..feee5b3 100644
+--- a/keepalived/check/check_snmp.c
++++ b/keepalived/check/check_snmp.c
+@@ -310,7 +310,7 @@ check_snmp_virtualserver(struct variable *vp, oid *name, size_t *length,
+ {
+ 	static unsigned long long_ret;
+ #ifdef _KRNL_2_6_
+-	static U64 counter64_ret;
++	static struct counter64 counter64_ret;
+ #endif
+ 	virtual_server_t *v;
+ 	element e;
+@@ -480,13 +480,13 @@ check_snmp_virtualserver(struct variable *vp, oid *name, size_t *length,
+ 		ipvs_update_stats(v);
+ 		counter64_ret.low = v->stats.inbytes & 0xffffffff;
+ 		counter64_ret.high = v->stats.inbytes >> 32;
+-		*var_len = sizeof(U64);
++		*var_len = sizeof(struct counter64);
+ 		return (u_char*)&counter64_ret;
+ 	case CHECK_SNMP_VSSTATSOUTBYTES:
+ 		ipvs_update_stats(v);
+ 		counter64_ret.low = v->stats.outbytes & 0xffffffff;
+ 		counter64_ret.high = v->stats.outbytes >> 32;
+-		*var_len = sizeof(U64);
++		*var_len = sizeof(struct counter64);
+ 		return (u_char*)&counter64_ret;
+ 	case CHECK_SNMP_VSRATECPS:
+ 		ipvs_update_stats(v);
+@@ -579,7 +579,7 @@ check_snmp_realserver(struct variable *vp, oid *name, size_t *length,
+ {
+ 	static unsigned long long_ret;
+ #ifdef _KRNL_2_6_
+-	static U64 counter64_ret;
++	static struct counter64 counter64_ret;
+ #endif
+ 	oid *target, current[2], best[2];
+ 	int result, target_len;
+@@ -770,13 +770,13 @@ check_snmp_realserver(struct variable *vp, oid *name, size_t *length,
+ 		ipvs_update_stats(bvs);
+ 		counter64_ret.low = be->stats.inbytes & 0xffffffff;
+ 		counter64_ret.high = be->stats.inbytes >> 32;
+-		*var_len = sizeof(U64);
++		*var_len = sizeof(struct counter64);
+ 		return (u_char*)&counter64_ret;
+ 	case CHECK_SNMP_RSSTATSOUTBYTES:
+ 		ipvs_update_stats(bvs);
+ 		counter64_ret.low = be->stats.outbytes & 0xffffffff;
+ 		counter64_ret.high = be->stats.outbytes >> 32;
+-		*var_len = sizeof(U64);
++		*var_len = sizeof(struct counter64);
+ 		return (u_char*)&counter64_ret;
+ 	case CHECK_SNMP_RSRATECPS:
+ 		ipvs_update_stats(bvs);
+-- 
+2.4.3
+
