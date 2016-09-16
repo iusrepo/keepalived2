@@ -9,13 +9,15 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.24
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
 
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
+
+Patch0: configure.patch
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -47,6 +49,7 @@ infrastructures.
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 %configure \
@@ -108,6 +111,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Fri Sep 16 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.24-2
+- Fix configure script
+
 * Thu Sep 15 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.24-1
 - Update to 1.2.24 (#1376254)
 
