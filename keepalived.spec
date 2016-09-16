@@ -17,8 +17,6 @@ Group: System Environment/Daemons
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
 
-Patch0: configure.patch
-
 Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
@@ -49,7 +47,6 @@ infrastructures.
 
 %prep
 %setup -q
-%patch0 -p1
 
 %build
 %configure \
