@@ -9,7 +9,7 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 1.2.24
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -29,6 +29,7 @@ BuildRequires: systemd-units
 BuildRequires: openssl-devel
 BuildRequires: libnl3-devel
 BuildRequires: ipset-devel
+BuildRequires: iptables-devel
 BuildRequires: libnfnetlink-devel
 
 %description
@@ -108,6 +109,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Fri Sep 16 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.24-3
+- Add BuildRequires for iptables-devel (#1361686)
+
 * Fri Sep 16 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.24-2
 - Fix configure script
 
