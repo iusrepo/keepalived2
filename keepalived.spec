@@ -8,8 +8,8 @@
 
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
-Version: 1.2.24
-Release: 3%{?dist}
+Version: 1.3.2
+Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -66,16 +66,6 @@ rm -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
 %{__install} -p -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/keepalived.service
 mkdir -p %{buildroot}%{_libexecdir}/keepalived
 
-%if %{with snmp}
-mkdir -p %{buildroot}%{_datadir}/snmp/mibs/
-%{__mv} %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB \
-    %{buildroot}%{_datadir}/snmp/mibs/KEEPALIVED-MIB.txt
-%{__mv} %{buildroot}%{_datadir}/snmp/mibs/VRRP-MIB \
-    %{buildroot}%{_datadir}/snmp/mibs/VRRP-MIB.txt
-    %{__mv} %{buildroot}%{_datadir}/snmp/mibs/VRRPv3-MIB \
-    %{buildroot}%{_datadir}/snmp/mibs/VRRPv3-MIB.txt
-%endif
-
 %clean
 rm -rf %{buildroot}
 
@@ -109,6 +99,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Mon Nov 28 2016 Ryan O'Hara <rohara@redhat.com> - 1.3.2-1
+- Update to 1.3.2 (#1396857)
+
 * Fri Sep 16 2016 Ryan O'Hara <rohara@redhat.com> - 1.2.24-3
 - Add BuildRequires for iptables-devel (#1361686)
 
