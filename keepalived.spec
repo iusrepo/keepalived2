@@ -8,8 +8,8 @@
 
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
-Version: 1.3.2
-Release: 2%{?dist}
+Version: 1.3.5
+Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -99,6 +99,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Sun Mar 26 2017 Ryan O'Hara <rohara@redhat.com> - 1.3.5-1
+- Update to 1.3.5 (#1422063)
+
 * Sun Feb 05 2017 Kalev Lember <klember@redhat.com> - 1.3.2-2
 - Rebuilt for libxtables soname bump
 
