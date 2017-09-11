@@ -8,14 +8,19 @@
 
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
-Version: 1.3.5
-Release: 3%{?dist}
+Version: 1.3.6
+Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
 
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
+
+Patch0: generate-readme.patch
+Patch1: fix-checksum-VRRPv3-unicast.patch
+Patch2: fix-conditional-compilation.patch
+
 
 Requires(post): systemd
 Requires(preun): systemd
@@ -48,6 +53,9 @@ infrastructures.
 
 %prep
 %setup -q
+%patch0 -p1
+%patch1 -p1
+%patch2 -p1
 
 %build
 %configure \
@@ -99,6 +107,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Mon Sep 11 2017 Ryan O'Hara <rohara@redhat.com> - 1.3.6-1
+- Update to 1.3.6 (#1481471)
+
 * Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 1.3.5-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
 
