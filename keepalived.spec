@@ -63,7 +63,8 @@ infrastructures.
     %{?with_profile:--enable-profile} \
     %{!?with_vrrp:--disable-vrrp} \
     %{?with_snmp:--enable-snmp --enable-snmp-rfc} \
-    %{?with_sha1:--enable-sha1}
+    %{?with_sha1:--enable-sha1} \
+    --with-init=systemd
 %{__make} %{?_smp_mflags} STRIP=/bin/true
 
 %install
