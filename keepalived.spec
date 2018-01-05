@@ -8,7 +8,7 @@
 
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
-Version: 1.3.9
+Version: 1.4.0
 Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
@@ -100,6 +100,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Fri Jan 05 2018 Ryan O'Hara <rohara@redhat.com> - 1.4.0-1
+- Update to 1.4.0 (#1529802)
+
 * Wed Oct 25 2017 Ryan O'Hara <rohara@redhat.com> - 1.3.9-1
 - Update to 1.3.9 (#1497576)
 
