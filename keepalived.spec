@@ -21,7 +21,6 @@ Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
 
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 %if %{with snmp}
 BuildRequires: net-snmp-devel
 %endif
