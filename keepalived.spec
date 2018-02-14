@@ -66,9 +66,6 @@ rm -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
 %{__install} -p -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/keepalived.service
 mkdir -p %{buildroot}%{_libexecdir}/keepalived
 
-%clean
-rm -rf %{buildroot}
-
 %post
 %systemd_post keepalived.service
 
