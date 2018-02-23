@@ -24,6 +24,7 @@ Requires(postun): systemd
 %if %{with snmp}
 BuildRequires: net-snmp-devel
 %endif
+BuildRequires: gcc
 BuildRequires: systemd-units
 BuildRequires: openssl-devel
 BuildRequires: libnl3-devel
