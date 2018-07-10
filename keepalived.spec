@@ -77,7 +77,6 @@ mkdir -p %{buildroot}%{_libexecdir}/keepalived
 %systemd_postun_with_restart keepalived.service
 
 %files
-%defattr(-,root,root,-)
 %attr(0755,root,root) %{_sbindir}/keepalived
 %config(noreplace) %attr(0644,root,root) %{_sysconfdir}/sysconfig/keepalived
 %config(noreplace) %attr(0644,root,root) %{_sysconfdir}/keepalived/keepalived.conf
