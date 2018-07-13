@@ -9,7 +9,7 @@
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 2.0.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -96,6 +96,9 @@ mkdir -p %{buildroot}%{_libexecdir}/keepalived
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 2.0.5-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
 * Tue Jul 03 2018 Ryan O'Hara <rohara@redhat.com> - 2.0.5-1
 - Update to 2.0.5 (#1576138)
 
