@@ -8,8 +8,8 @@
 
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
-Version: 2.0.5
-Release: 3%{?dist}
+Version: 2.0.6
+Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 Group: System Environment/Daemons
@@ -96,6 +96,9 @@ mkdir -p %{buildroot}%{_libexecdir}/keepalived
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Wed Jul 25 2018 Ryan O'Hara <rohara@redhat.com> - 2.0.6-1
+- Update to 2.0.6 (#1576138)
+
 * Tue Jul 24 2018 Adam Williamson <awilliam@redhat.com> - 2.0.5-3
 - Rebuild for new net-snmp
 
