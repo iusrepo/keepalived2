@@ -8,7 +8,7 @@
 
 Name: keepalived
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
-Version: 2.0.6
+Version: 2.0.10
 Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
@@ -96,6 +96,13 @@ mkdir -p %{buildroot}%{_libexecdir}/keepalived
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Mon Nov 26 2018 Ryan O'Hara <rohara@redhat.com> - 2.0.10-1
+- Update to 2.0.10
+- Fix improper pathname validation (#1651864, CVE-2018-19044)
+- Fix insecure permissions when creating temporary files (#1651868, CVE-2018-19045)
+- Fix insecure use of temporary files (#1651870, CVE-2018-19046)
+- Fix buffer overflow when parsing HTTP status codes (#1651873, CVE-2018-19047)
+
 * Wed Jul 25 2018 Ryan O'Hara <rohara@redhat.com> - 2.0.6-1
 - Update to 2.0.6 (#1576138)
 
