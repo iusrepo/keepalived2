@@ -12,7 +12,6 @@ Version: 2.0.11
 Release: 1%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
-Group: System Environment/Daemons
 
 Source0: http://www.keepalived.org/software/keepalived-%{version}.tar.gz
 Source1: keepalived.service
