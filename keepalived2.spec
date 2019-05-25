@@ -6,10 +6,10 @@
 
 %global _hardened_build 1
 
-Name: keepalived
+Name: keepalived2
 Summary: High Availability monitor built upon LVS, VRRP and service pollers
 Version: 2.0.12
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 URL: http://www.keepalived.org/
 
@@ -33,6 +33,10 @@ BuildRequires: pkgconfig(libiptc)
 BuildRequires: pkgconfig(xtables)
 BuildRequires: libnfnetlink-devel
 
+Provides: keepalived = %{version}-%{release}
+Provides: keepalived%{?_isa} = %{version}-%{release}
+Conflicts: keepalived < %{version}-%{release}
+
 %description
 Keepalived provides simple and robust facilities for load balancing
 and high availability to Linux system and Linux based infrastructures.
@@ -48,7 +52,7 @@ can be used independently or all together to provide resilient
 infrastructures.
 
 %prep
-%setup -q
+%setup -q -n keepalived-%{version}
 
 %build
 %configure \
@@ -64,6 +68,7 @@ infrastructures.
 %make_install
 rm -rf %{buildroot}%{_initrddir}/
 rm -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
+rm -rf %{buildroot}%{_docdir}/keepalived
 install -p -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/keepalived.service
 mkdir -p %{buildroot}%{_libexecdir}/keepalived
 
@@ -97,6 +102,9 @@ mkdir -p %{buildroot}%{_libexecdir}/keepalived
 %{_mandir}/man8/keepalived.8*
 
 %changelog
+* Mon May 27 2019 evitalis <evitalis@users.noreply.github.com> - 2.0.12-2
+- Port from Fedora to IUS
+
 * Mon Feb 04 2019 Ryan O'Hara <rohara@redhat.com> - 2.0.12-1
 - Update to 2.0.12 (#1576138)
 
