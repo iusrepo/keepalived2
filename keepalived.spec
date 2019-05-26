@@ -61,7 +61,6 @@ infrastructures.
 %make_build STRIP=/bin/true
 
 %install
-rm -rf %{buildroot}
 %make_install
 rm -rf %{buildroot}%{_initrddir}/
 rm -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
@@ -78,9 +77,9 @@ mkdir -p %{buildroot}%{_libexecdir}/keepalived
 %systemd_postun_with_restart keepalived.service
 
 %files
-%attr(0755,root,root) %{_sbindir}/keepalived
-%config(noreplace) %attr(0644,root,root) %{_sysconfdir}/sysconfig/keepalived
-%config(noreplace) %attr(0644,root,root) %{_sysconfdir}/keepalived/keepalived.conf
+%{_sbindir}/keepalived
+%config(noreplace) %{_sysconfdir}/sysconfig/keepalived
+%config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
 %doc AUTHOR ChangeLog CONTRIBUTORS COPYING README TODO
 %doc doc/keepalived.conf.SYNOPSIS doc/samples/keepalived.conf.*
 %dir %{_sysconfdir}/keepalived/
