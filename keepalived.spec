@@ -58,11 +58,11 @@ infrastructures.
     %{?with_snmp:--enable-snmp --enable-snmp-rfc} \
     %{?with_sha1:--enable-sha1} \
     --with-init=systemd
-make %{?_smp_mflags} STRIP=/bin/true
+%make_build STRIP=/bin/true
 
 %install
 rm -rf %{buildroot}
-make install DESTDIR=%{buildroot}
+%make_install
 rm -rf %{buildroot}%{_initrddir}/
 rm -rf %{buildroot}%{_sysconfdir}/keepalived/samples/
 install -p -D -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/keepalived.service
