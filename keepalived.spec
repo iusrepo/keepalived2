@@ -25,10 +25,12 @@ BuildRequires: net-snmp-devel
 %endif
 BuildRequires: gcc
 BuildRequires: systemd-units
-BuildRequires: openssl-devel
-BuildRequires: libnl3-devel
-BuildRequires: ipset-devel
-BuildRequires: iptables-devel
+BuildRequires: pkgconfig(openssl)
+BuildRequires: pkgconfig(libnl-3.0)
+BuildRequires: pkgconfig(libnl-genl-3.0)
+BuildRequires: pkgconfig(libipset)
+BuildRequires: pkgconfig(libiptc)
+BuildRequires: pkgconfig(xtables)
 BuildRequires: libnfnetlink-devel
 
 %description
