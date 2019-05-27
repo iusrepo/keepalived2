@@ -77,10 +77,11 @@ mkdir -p %{buildroot}%{_libexecdir}/keepalived
 %systemd_postun_with_restart keepalived.service
 
 %files
+%license COPYING
 %{_sbindir}/keepalived
 %config(noreplace) %{_sysconfdir}/sysconfig/keepalived
 %config(noreplace) %{_sysconfdir}/keepalived/keepalived.conf
-%doc AUTHOR ChangeLog CONTRIBUTORS COPYING README TODO
+%doc AUTHOR ChangeLog CONTRIBUTORS README TODO
 %doc doc/keepalived.conf.SYNOPSIS doc/samples/keepalived.conf.*
 %dir %{_sysconfdir}/keepalived/
 %dir %{_libexecdir}/keepalived/
